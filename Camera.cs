@@ -15,14 +15,14 @@ namespace TileMap
         public float X;
         public float Y;
 
-        private int cameraSpeed = 5;
+        private float cameraSpeed = 2.5f;
 
         public Camera(Vector2 position)
         {
             this.position = position;
         }
 
-        public void Update()
+        public void Update(float deltaTime)
         {   
             X = position.X;
             Y = position.Y;
@@ -30,19 +30,19 @@ namespace TileMap
             // Input
             if (Keyboard.GetState().IsKeyDown(Keys.A))
             {
-                position.X -= cameraSpeed;
+                position.X -= cameraSpeed * deltaTime;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.D))
             {
-                position.X += cameraSpeed;
+                position.X += cameraSpeed * deltaTime;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.W))
             {
-                position.Y -= cameraSpeed;
+                position.Y -= cameraSpeed * deltaTime;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.S))
             {
-                position.Y += cameraSpeed;
+                position.Y += cameraSpeed * deltaTime;
             }
 
             // Boundaries

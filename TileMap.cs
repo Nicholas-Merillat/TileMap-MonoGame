@@ -36,7 +36,7 @@ namespace TileMap
             {
                 for (int y = 0; y < size.Y; y++)
                 {   
-                    if (y >= 8)
+                    if (y >= 15)
                     {
                         SetTile(x, y, 1);
                     }
@@ -83,6 +83,7 @@ namespace TileMap
 
         public void Draw(SpriteBatch spriteBatch)
         {   
+            // TODO: Move this camera stuff out of draw
             Vector2 cameraTilePosition = (camera.position / new Vector2(tileSize));
 
             visibleRange.X = cameraTilePosition.X + (screenSize.X / tileSize);
@@ -100,7 +101,7 @@ namespace TileMap
                     else if (GetTile(x,y) == 1)
                     {
                         Vector2 tilePos = new Vector2((x * tileSize) - camera.X, (y * tileSize) - camera.Y);
-                        spriteBatch.Draw(tileset.texture, tilePos, tileset.GetTileRect(0), Color.White);
+                        spriteBatch.Draw(tileset.texture, new Vector2((int)tilePos.X, (int)tilePos.Y), tileset.GetTileRect(15), Color.White);
                     }
                 }
             }
