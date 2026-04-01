@@ -10,9 +10,11 @@ namespace TileMap
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
-        Texture2D texture;
-        TileMap tilemap;
-        Camera camera;
+        private Vector2 screenSize = new Vector2(1280, 720);
+
+        private Texture2D texture;
+        private TileMap tilemap;
+        private Camera camera;
 
         public Game1()
         {
@@ -24,8 +26,9 @@ namespace TileMap
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-            camera = new Camera(Vector2.Zero);
-            tilemap = new TileMap(new Vector2(10, 5));
+            _graphics.PreferredBackBufferWidth = (int)screenSize.X;
+            _graphics.PreferredBackBufferHeight = (int)screenSize.Y;
+            _graphics.ApplyChanges();
 
             base.Initialize();
         }
@@ -36,6 +39,9 @@ namespace TileMap
 
             // TODO: use this.Content to load your game content here
             texture = Content.Load<Texture2D>("UFOMater");
+
+            camera = new Camera(Vector2.Zero);
+            tilemap = new TileMap(screenSize, new Vector2(20, 20), texture);
         }
 
         protected override void Update(GameTime gameTime)
@@ -56,13 +62,7 @@ namespace TileMap
             _spriteBatch.Begin();
 
             // TODO: Add your drawing code here
-            for (int x = 0; x < tilemap.size.X; x++)
-            {
-                for (int y=0; y < tilemap.size.Y; y++)
-                {
-                    _spriteBatch.Draw(texture, new Vector2((x * 64) - camera.position.X, (y * 64) - camera.position.Y), Color.White);
-                }
-            }
+            tilemap.Draw(_spriteBatch, camera.position);
 
             _spriteBatch.End();
 
