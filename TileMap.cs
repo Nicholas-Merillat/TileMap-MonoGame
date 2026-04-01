@@ -48,14 +48,25 @@ namespace TileMap
             }
         }
 
+        public void SetTile(int x, int y, int id)
+        {
+            grid[x, y] = id;
+        }
+        public int GetTile(int x, int y)
+        {
+            return grid[x, y];
+        }
         public Vector2 ScreenToTile(float x, float y)
         {
             return new Vector2((int)Math.Floor((x / tileSize) + camera.X / tileSize), (int)Math.Floor((y / tileSize) + camera.Y / tileSize));
         }
+        public Vector2 WorldToTile(float x, float y)
+        {
+            return new Vector2((int)Math.Floor(x / tileSize), (int)Math.Floor(y / tileSize));
+        }
 
         public void Update(MouseState mouseState, int screenScaleFactor)
         {
-            //Vector2 mousePosition = new Vector2(((mouseState.X / tileSize) / screenScaleFactor) + (camera.X / tileSize), ((mouseState.Y / tileSize) / screenScaleFactor) + (camera.Y / tileSize));
             Vector2 mousePosition = ScreenToTile(mouseState.X / screenScaleFactor, mouseState.Y / screenScaleFactor);
             if (mousePosition.X >= 0 && mousePosition.Y >= 0 && mousePosition.X < size.X && mousePosition.Y < size.Y)
             {
