@@ -7,10 +7,16 @@ namespace TileMap
 {
     public class Game1 : Game
     {
+        private readonly Vector2 screenSize = new Vector2(1280, 720);
+        private Vector2 viewportSize = new Vector2(640, 360);
+        private int screenScaleFactor = 1280 / 640;
+
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
+        private MouseState _currentMouseState;
+        private MouseState _previousMouseState;
 
-        private Vector2 screenSize = new Vector2(1280, 720);
+        private RenderTarget2D viewport;
 
         private Texture2D texture;
         private TileMap tilemap;
@@ -37,11 +43,11 @@ namespace TileMap
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // TODO: use this.Content to load your game content here
-            texture = Content.Load<Texture2D>("UFOMater");
+            viewport = new RenderTarget2D(GraphicsDevice, (int)viewportSize.X, (int)viewportSize.Y);
 
+            texture = Content.Load<Texture2D>("grass");
             camera = new Camera(Vector2.Zero);
-            tilemap = new TileMap(screenSize, new Vector2(20, 20), texture);
+            tilemap = new TileMap(screenSize, new Vector2(100, 50), 8, texture, camera);
         }
 
         protected override void Update(GameTime gameTime)
@@ -49,21 +55,44 @@ namespace TileMap
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // TODO: Add your update logic here
+            _previousMouseState = _currentMouseState;
+            _currentMouseState = Mouse.GetState();
+
+            //if (Keyboard.GetState().IsKeyDown(Keys.OemMinus))
+            //{
+            //    viewportSize.X -= 2;
+            //    viewportSize.Y -= 2 / (screenSize.X / screenSize.Y);
+            //    viewport = new RenderTarget2D(GraphicsDevice, (int)viewportSize.X, (int)viewportSize.Y);
+            //}
+            //if (Keyboard.GetState().IsKeyDown(Keys.OemPlus))
+            //{
+            //    viewportSize.X += 2;
+            //    viewportSize.Y += 2 / (screenSize.X / screenSize.Y);
+            //    viewport = new RenderTarget2D(GraphicsDevice, (int)viewportSize.X, (int)viewportSize.Y);
+            //}
+
             camera.Update();
+            tilemap.Update(_currentMouseState, screenScaleFactor);
 
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
+            GraphicsDevice.SetRenderTarget(viewport);
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
+            // Game stuff
             _spriteBatch.Begin();
+            tilemap.Draw(_spriteBatch);
+            _spriteBatch.End();
 
-            // TODO: Add your drawing code here
-            tilemap.Draw(_spriteBatch, camera.position);
+            GraphicsDevice.SetRenderTarget(null);
+            GraphicsDevice.Clear(Color.CornflowerBlue);
 
+            // Scale everything back up from 640x360
+            _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+            _spriteBatch.Draw(viewport, new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height), Color.White);
             _spriteBatch.End();
 
             base.Draw(gameTime);

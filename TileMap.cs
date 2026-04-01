@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,19 +13,24 @@ namespace TileMap
     internal class TileMap
     {
         private Vector2 screenSize;
+        private Camera camera;
 
         public Vector2 visibleRange;
 
         public Vector2 size;
-        public Texture2D texture;
+        public int tileSize;
+        public TileSet tileset;
         public int[,] grid;
 
-        public TileMap(Vector2 screenSize, Vector2 size, Texture2D texture)
+        public TileMap(Vector2 screenSize, Vector2 size, int tileSize, Texture2D texture, Camera camera)
         {
             this.screenSize = screenSize;
             this.size = size;
-            this.texture = texture;
+            this.tileSize = tileSize;
+            this.camera = camera;
+            tileset = new TileSet(texture, tileSize);
 
+            // Create grid and generate
             grid = new int[(int)size.X, (int)size.Y];
             for (int x = 0; x < size.X; x++)
             {
@@ -41,22 +47,44 @@ namespace TileMap
                 }
             }
         }
-        public void Draw(SpriteBatch spriteBatch, Vector2 cameraPosition)
-        {
-            visibleRange.X = cameraPosition.X / 64 + (screenSize.X / 64);
-            visibleRange.Y = cameraPosition.Y / 64 + (screenSize.Y / 64);
 
-            for (int x = (int)cameraPosition.X / 64; x < visibleRange.X; x++)
+        public Vector2 ScreenToTile(float x, float y)
+        {
+            return new Vector2((int)Math.Floor((x / tileSize) + camera.X / tileSize), (int)Math.Floor((y / tileSize) + camera.Y / tileSize));
+        }
+
+        public void Update(MouseState mouseState, int screenScaleFactor)
+        {
+            //Vector2 mousePosition = new Vector2(((mouseState.X / tileSize) / screenScaleFactor) + (camera.X / tileSize), ((mouseState.Y / tileSize) / screenScaleFactor) + (camera.Y / tileSize));
+            Vector2 mousePosition = ScreenToTile(mouseState.X / screenScaleFactor, mouseState.Y / screenScaleFactor);
+            if (mousePosition.X >= 0 && mousePosition.Y >= 0 && mousePosition.X < size.X && mousePosition.Y < size.Y)
             {
-                for (int y = (int)cameraPosition.Y / 64; y < visibleRange.Y; y++)
+                if (mouseState.LeftButton == ButtonState.Pressed)
+                {
+                    grid[(int)mousePosition.X, (int)mousePosition.Y] = 1;
+                }
+            }
+        }
+
+        public void Draw(SpriteBatch spriteBatch)
+        {   
+            Vector2 cameraTilePosition = camera.position / new Vector2(tileSize);
+            visibleRange.X = cameraTilePosition.X + (screenSize.X / tileSize);
+            visibleRange.Y = cameraTilePosition.Y + (screenSize.Y / tileSize);
+
+            // Only render visible tiles
+            for (int x = (int)cameraTilePosition.X; x < visibleRange.X; x++)
+            {
+                for (int y = (int)cameraTilePosition.Y; y < visibleRange.Y; y++)
                 {   
-                    if (x >= size.X || y >= size.Y)
+                    if (x >= size.X || y >= size.Y) // Edge detection
                     {
                         break;
                     }
                     else if (grid[x, y] == 1)
                     {
-                        spriteBatch.Draw(texture, new Vector2((x * 64) - cameraPosition.X, (y * 64) - cameraPosition.Y), Color.White);
+                        Vector2 tilePos = new Vector2((x * tileSize) - camera.X, (y * tileSize) - camera.Y);
+                        spriteBatch.Draw(tileset.texture, tilePos, tileset.GetTileRect(0), Color.White);
                     }
                 }
             }

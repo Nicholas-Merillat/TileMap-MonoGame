@@ -12,6 +12,8 @@ namespace TileMap
     internal class Camera
     {
         public Vector2 position;
+        public float X;
+        public float Y;
 
         private int cameraSpeed = 5;
 
@@ -22,6 +24,8 @@ namespace TileMap
 
         public void Update()
         {   
+            X = position.X;
+            Y = position.Y;
 
             // Input
             if (Keyboard.GetState().IsKeyDown(Keys.A))
