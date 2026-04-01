@@ -1,2 +1,2 @@
-﻿using var game = new TileMap.Game1();
+﻿using var game = new TileMap.Main();
 game.Run();
