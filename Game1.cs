@@ -47,7 +47,7 @@ namespace TileMap
 
             texture = Content.Load<Texture2D>("grass");
             camera = new Camera(Vector2.Zero);
-            tilemap = new TileMap(screenSize, new Vector2(100, 50), 8, texture, camera);
+            tilemap = new TileMap(viewportSize, new Vector2(200, 50), 8, texture, camera);
         }
 
         protected override void Update(GameTime gameTime)
@@ -58,18 +58,23 @@ namespace TileMap
             _previousMouseState = _currentMouseState;
             _currentMouseState = Mouse.GetState();
 
-            //if (Keyboard.GetState().IsKeyDown(Keys.OemMinus))
-            //{
-            //    viewportSize.X -= 2;
-            //    viewportSize.Y -= 2 / (screenSize.X / screenSize.Y);
-            //    viewport = new RenderTarget2D(GraphicsDevice, (int)viewportSize.X, (int)viewportSize.Y);
-            //}
-            //if (Keyboard.GetState().IsKeyDown(Keys.OemPlus))
-            //{
-            //    viewportSize.X += 2;
-            //    viewportSize.Y += 2 / (screenSize.X / screenSize.Y);
-            //    viewport = new RenderTarget2D(GraphicsDevice, (int)viewportSize.X, (int)viewportSize.Y);
-            //}
+            if (Keyboard.GetState().IsKeyDown(Keys.OemMinus))
+            {
+                viewportSize.X += 2;
+                viewportSize.Y += 2 / (screenSize.X / screenSize.Y);
+                viewport = new RenderTarget2D(GraphicsDevice, (int)viewportSize.X, (int)viewportSize.Y);
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.OemPlus))
+            {
+                viewportSize.X -= 2;
+                viewportSize.Y -= 2 / (screenSize.X / screenSize.Y);
+                viewport = new RenderTarget2D(GraphicsDevice, (int)viewportSize.X, (int)viewportSize.Y);
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.Back))
+            {
+                viewportSize = new Vector2(640, 360);
+                viewport = new RenderTarget2D(GraphicsDevice, (int)viewportSize.X, (int)viewportSize.Y);
+            }
 
             camera.Update();
             tilemap.Update(_currentMouseState, screenScaleFactor);

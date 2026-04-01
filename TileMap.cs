@@ -12,15 +12,14 @@ namespace TileMap
 {
     internal class TileMap
     {
+        private int[,] grid;
         private Vector2 screenSize;
         private Camera camera;
 
-        public Vector2 visibleRange;
-
-        public Vector2 size;
         public int tileSize;
+        public Vector2 size;
+        public Vector2 visibleRange;
         public TileSet tileset;
-        public int[,] grid;
 
         public TileMap(Vector2 screenSize, Vector2 size, int tileSize, Texture2D texture, Camera camera)
         {
@@ -28,6 +27,7 @@ namespace TileMap
             this.size = size;
             this.tileSize = tileSize;
             this.camera = camera;
+
             tileset = new TileSet(texture, tileSize);
 
             // Create grid and generate
@@ -38,23 +38,23 @@ namespace TileMap
                 {   
                     if (y >= 8)
                     {
-                        grid[x, y] = 1;
+                        SetTile(x, y, 1);
                     }
                     else
                     {
-                        grid[x, y] = 0;
+                        SetTile(x, y, 0);
                     }
                 }
             }
         }
 
-        public void SetTile(int x, int y, int id)
+        public void SetTile(float x, float y, int id)
         {
-            grid[x, y] = id;
+            grid[(int)x, (int)y] = id;
         }
-        public int GetTile(int x, int y)
+        public int GetTile(float x, float y)
         {
-            return grid[x, y];
+            return grid[(int)x, (int)y];
         }
         public Vector2 ScreenToTile(float x, float y)
         {
@@ -70,29 +70,34 @@ namespace TileMap
             Vector2 mousePosition = ScreenToTile(mouseState.X / screenScaleFactor, mouseState.Y / screenScaleFactor);
             if (mousePosition.X >= 0 && mousePosition.Y >= 0 && mousePosition.X < size.X && mousePosition.Y < size.Y)
             {
-                if (mouseState.LeftButton == ButtonState.Pressed)
+                if (mouseState.RightButton == ButtonState.Pressed)
                 {
-                    grid[(int)mousePosition.X, (int)mousePosition.Y] = 1;
+                    SetTile(mousePosition.X, mousePosition.Y, 1);
+                }
+                else if (mouseState.LeftButton == ButtonState.Pressed)
+                {
+                    SetTile(mousePosition.X, mousePosition.Y, 0);
                 }
             }
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {   
-            Vector2 cameraTilePosition = camera.position / new Vector2(tileSize);
+            Vector2 cameraTilePosition = (camera.position / new Vector2(tileSize));
+
             visibleRange.X = cameraTilePosition.X + (screenSize.X / tileSize);
             visibleRange.Y = cameraTilePosition.Y + (screenSize.Y / tileSize);
 
-            // Only render visible tiles
-            for (int x = (int)cameraTilePosition.X; x < visibleRange.X; x++)
+            // Only render visible tiles (Column major because apparently it's more memory efficient or something)
+            for (int y = (int)cameraTilePosition.Y; y < visibleRange.Y; y++)
             {
-                for (int y = (int)cameraTilePosition.Y; y < visibleRange.Y; y++)
+                for (int x = (int)cameraTilePosition.X; x < visibleRange.X; x++)
                 {   
                     if (x >= size.X || y >= size.Y) // Edge detection
                     {
                         break;
                     }
-                    else if (grid[x, y] == 1)
+                    else if (GetTile(x,y) == 1)
                     {
                         Vector2 tilePos = new Vector2((x * tileSize) - camera.X, (y * tileSize) - camera.Y);
                         spriteBatch.Draw(tileset.texture, tilePos, tileset.GetTileRect(0), Color.White);

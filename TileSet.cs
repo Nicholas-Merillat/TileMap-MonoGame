@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+// Pretty much 1:1 port of tileset.py from original pygame version
+
 namespace TileMap
 {
     internal class TileSet
