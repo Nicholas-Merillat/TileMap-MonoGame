@@ -38,7 +38,7 @@ namespace TileMap
             IsMouseVisible = true;
 
             // Uncaps the fps
-            _graphics.SynchronizeWithVerticalRetrace = true;
+            _graphics.SynchronizeWithVerticalRetrace = false;
             IsFixedTimeStep = false;
         }
 
@@ -62,7 +62,7 @@ namespace TileMap
             texture = Content.Load<Texture2D>("Images/Grass");
             playerTexture = Content.Load<Texture2D>("Images/UFOMater");
             camera = new Camera(Vector2.Zero);
-            tilemap = new TileMap(viewportSize, new Vector2(100, 100), 8, texture, camera);
+            tilemap = new TileMap(viewportSize, new Vector2(100, 50), 8, texture, camera);
             player = new Player(Vector2.Zero, playerTexture, tilemap);
         }
 
@@ -108,7 +108,7 @@ namespace TileMap
             }
 
             player.Update(deltaTime);
-            camera.Update(deltaTime);
+            camera.Update(deltaTime, player);
             tilemap.Update(_currentMouseState, screenScaleFactor);
 
             base.Update(gameTime);
@@ -123,7 +123,7 @@ namespace TileMap
             _spriteBatch.Begin();
 
             tilemap.Draw(_spriteBatch);
-            player.Draw(_spriteBatch);
+            player.Draw(_spriteBatch, camera.position);
 
             _spriteBatch.End();
 

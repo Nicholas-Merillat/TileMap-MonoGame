@@ -121,7 +121,7 @@ namespace TileMap
         }
         public Vector2 ScreenToTile(float x, float y)
         {
-            return new Vector2((int)Math.Floor((x / tileSize) + camera.X / tileSize), (int)Math.Floor((y / tileSize) + camera.Y / tileSize));
+            return new Vector2((int)Math.Floor((x / tileSize) + camera.position.X / tileSize), (int)Math.Floor((y / tileSize) + camera.position.Y / tileSize));
         }
         public Vector2 WorldToTile(float x, float y)
         {
@@ -171,8 +171,8 @@ namespace TileMap
                         else
                             bitmask = 47; // Fallback to last tile in tileset
 
-                        Vector2 tilePos = new Vector2((x * tileSize) - camera.X, (y * tileSize) - camera.Y);
-                        spriteBatch.Draw(tileset.texture, new Vector2((int)tilePos.X, (int)tilePos.Y), tileset.GetTileRect(bitmask), Color.White);
+                        Vector2 tilePos = new Vector2((x * tileSize) - camera.position.X, (y * tileSize) - camera.position.Y);
+                        spriteBatch.Draw(tileset.texture, new Vector2((int)Math.Floor(tilePos.X), (int)Math.Floor(tilePos.Y)), tileset.GetTileRect(bitmask), Color.White);
                     }
                 }
             }

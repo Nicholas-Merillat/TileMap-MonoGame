@@ -12,17 +12,17 @@ namespace TileMap
 {
     internal class Player
     {
-        private const int Width = 8;
-        private const int Height = 16;
         private const float Gravity = 0.1f;
         private const float Speed = 0.1f;
-        private const float MaxSpeed = 2.5f;
+        private const float MaxSpeed = 1.25f;
+
+        public readonly int Width = 8;
+        public readonly int Height = 16;
 
         private Texture2D texture;
         private TileMap tilemap;
-
-        private int direction;
-
+        
+        public int direction;
         public Vector2 position;
         public Vector2 velocity;
 
@@ -61,10 +61,12 @@ namespace TileMap
             Vector2 belowTileRight = tilemap.WorldToTile(position.X + Width - 1, position.Y + Height);
             Vector2 aboveTileLeft = tilemap.WorldToTile(position.X + 1, position.Y - 1);
             Vector2 aboveTileRight = tilemap.WorldToTile(position.X + Width - 1, position.Y - 1);
-            Vector2 rightTileTop = tilemap.WorldToTile(position.X + Width, position.Y + 1);
-            Vector2 rightTileBottom = tilemap.WorldToTile(position.X + Width, position.Y + Height - 1);
+            Vector2 rightTileTop = tilemap.WorldToTile(position.X + Width + 1, position.Y + 1);
+            Vector2 rightTileBottom = tilemap.WorldToTile(position.X + Width + 1, position.Y + Height - 1);
             Vector2 leftTileTop = tilemap.WorldToTile(position.X - 1, position.Y + 1);
             Vector2 leftTileBottom = tilemap.WorldToTile(position.X - 1, position.Y + Height - 1);
+
+            // Prepare for the horde of if statements
 
             // Floor collision
             if (tilemap.GetTile(belowTileLeft.X, belowTileLeft.Y) != 0 && velocity.Y >= 0)
@@ -115,22 +117,34 @@ namespace TileMap
             }
 
             // World border
-            if (position.X < 0 && velocity.X <= 0)
+            if (position.X - 1 < 0 && velocity.X <= 0)
             {
                 position.X = 0;
+                velocity.X = 0;
             }
-            if (position.Y < 0)
+            if (position.Y < 0 && velocity.Y <= 0)
             {
                 position.Y = 0;
+                velocity.Y = 0;
+            }
+            if (position.X + 1 > (tilemap.size.X - 1) * 8 && velocity.X >= 0)
+            {
+                position.X = (tilemap.size.X - 1) * 8;
+                velocity.X = 0;
+            }
+            if (position.Y + Height + 1 > tilemap.size.Y * 8 && velocity.Y >= 0)
+            {
+                position.Y = tilemap.size.Y * 8 - Height;
+                velocity.Y = 0;
             }
 
             position.X += velocity.X * deltaTime;
             position.Y += velocity.Y * deltaTime;
         }
 
-        public void Draw(SpriteBatch spriteBatch)
+        public void Draw(SpriteBatch spriteBatch, Vector2 cameraPosition)
         {
-            spriteBatch.Draw(texture, new Rectangle((int)position.X, (int)position.Y, Width, Height), Color.White);
+            spriteBatch.Draw(texture, new Rectangle((int)position.X - (int)cameraPosition.X, (int)position.Y - (int)cameraPosition.Y, Width, Height), Color.White);
         }
     }
 }

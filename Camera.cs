@@ -11,39 +11,19 @@ namespace TileMap
 {
     internal class Camera
     {
-        public Vector2 position;
-        public float X;
-        public float Y;
-
         private float cameraSpeed = 2f;
+
+        public Vector2 position;
 
         public Camera(Vector2 position)
         {
             this.position = position;
         }
 
-        public void Update(float deltaTime)
-        {   
-            X = position.X;
-            Y = position.Y;
-
-            // Input
-            //if (Keyboard.GetState().IsKeyDown(Keys.A))
-            //{
-            //    position.X -= cameraSpeed * deltaTime;
-            //}
-            //if (Keyboard.GetState().IsKeyDown(Keys.D))
-            //{
-            //    position.X += cameraSpeed * deltaTime;
-            //}
-            //if (Keyboard.GetState().IsKeyDown(Keys.W))
-            //{
-            //    position.Y -= cameraSpeed * deltaTime;
-            //}
-            //if (Keyboard.GetState().IsKeyDown(Keys.S))
-            //{
-            //    position.Y += cameraSpeed * deltaTime;
-            //}
+        public void Update(float deltaTime, Player player)
+        {
+            position.X = (player.position.X + player.Width / 2) - 640 / 2;
+            position.Y = (player.position.Y + player.Height / 2) - 360 / 2;
 
             // Boundaries
             if (position.X < 0)
