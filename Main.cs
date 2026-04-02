@@ -38,7 +38,7 @@ namespace TileMap
             IsMouseVisible = true;
 
             // Uncaps the fps
-            _graphics.SynchronizeWithVerticalRetrace = false;
+            _graphics.SynchronizeWithVerticalRetrace = true;
             IsFixedTimeStep = false;
         }
 
