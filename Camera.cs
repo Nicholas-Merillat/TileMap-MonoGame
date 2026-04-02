@@ -15,7 +15,7 @@ namespace TileMap
         public float X;
         public float Y;
 
-        private float cameraSpeed = 2.5f;
+        private float cameraSpeed = 2f;
 
         public Camera(Vector2 position)
         {

@@ -9,6 +9,8 @@ namespace TileMap
 {
     public class Main : Game
     {
+        private readonly int physicsFPS = 60;
+
         private readonly Vector2 screenSize = new Vector2(1280, 720);
         private Vector2 viewportSize = new Vector2(640, 360);
         private int screenScaleFactor = 1280 / 640;
@@ -34,7 +36,7 @@ namespace TileMap
             IsMouseVisible = true;
 
             // Uncaps the fps
-            _graphics.SynchronizeWithVerticalRetrace = false;
+            _graphics.SynchronizeWithVerticalRetrace = true;
             IsFixedTimeStep = false;
         }
 
@@ -57,13 +59,13 @@ namespace TileMap
 
             texture = Content.Load<Texture2D>("grass");
             camera = new Camera(Vector2.Zero);
-            tilemap = new TileMap(viewportSize, new Vector2(200, 50), 8, texture, camera);
+            tilemap = new TileMap(viewportSize, new Vector2(100, 50), 8, texture, camera);
         }
 
         protected override void Update(GameTime gameTime)
         {
-            deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds * 60;
-            fps = 1 / (deltaTime / 60);
+            deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds * physicsFPS;
+            fps = 1 / (deltaTime / physicsFPS);
 
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
@@ -77,6 +79,10 @@ namespace TileMap
                 viewport.Dispose();
                 viewportSize.X += 2 * deltaTime;
                 viewportSize.Y += (2 / (screenSize.X / screenSize.Y)) * deltaTime;
+                if (viewportSize.X > 640)
+                {
+                    viewportSize = new Vector2(640, 360);
+                }
                 viewport = new RenderTarget2D(GraphicsDevice, (int)viewportSize.X, (int)viewportSize.Y);
             }
             if (Keyboard.GetState().IsKeyDown(Keys.OemPlus))
@@ -84,6 +90,10 @@ namespace TileMap
                 viewport.Dispose();
                 viewportSize.X -= 2 * deltaTime;
                 viewportSize.Y -= (2 / (screenSize.X / screenSize.Y)) * deltaTime;
+                if (viewportSize.X < 10)
+                {
+                    viewportSize = new Vector2(10, 10 / screenScaleFactor);
+                }
                 viewport = new RenderTarget2D(GraphicsDevice, (int)viewportSize.X, (int)viewportSize.Y);
             }
             if (Keyboard.GetState().IsKeyDown(Keys.Back))
