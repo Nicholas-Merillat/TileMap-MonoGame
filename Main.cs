@@ -26,8 +26,10 @@ namespace TileMap
         private RenderTarget2D viewport;
 
         private Texture2D texture;
+        private Texture2D playerTexture;
         private TileMap tilemap;
         private Camera camera;
+        private Player player;
 
         public Main()
         {
@@ -36,7 +38,7 @@ namespace TileMap
             IsMouseVisible = true;
 
             // Uncaps the fps
-            _graphics.SynchronizeWithVerticalRetrace = true;
+            _graphics.SynchronizeWithVerticalRetrace = false;
             IsFixedTimeStep = false;
         }
 
@@ -53,13 +55,15 @@ namespace TileMap
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            _font = Content.Load<SpriteFont>("font");
+            _font = Content.Load<SpriteFont>("Fonts/Font");
 
             viewport = new RenderTarget2D(GraphicsDevice, (int)viewportSize.X, (int)viewportSize.Y);
 
-            texture = Content.Load<Texture2D>("grass");
+            texture = Content.Load<Texture2D>("Images/Grass");
+            playerTexture = Content.Load<Texture2D>("Images/UFOMater");
             camera = new Camera(Vector2.Zero);
-            tilemap = new TileMap(viewportSize, new Vector2(100, 50), 8, texture, camera);
+            tilemap = new TileMap(viewportSize, new Vector2(100, 100), 8, texture, camera);
+            player = new Player(Vector2.Zero, playerTexture, tilemap);
         }
 
         protected override void Update(GameTime gameTime)
@@ -103,6 +107,7 @@ namespace TileMap
                 viewport = new RenderTarget2D(GraphicsDevice, (int)viewportSize.X, (int)viewportSize.Y);
             }
 
+            player.Update(deltaTime);
             camera.Update(deltaTime);
             tilemap.Update(_currentMouseState, screenScaleFactor);
 
@@ -116,7 +121,10 @@ namespace TileMap
 
             // Game stuff
             _spriteBatch.Begin();
+
             tilemap.Draw(_spriteBatch);
+            player.Draw(_spriteBatch);
+
             _spriteBatch.End();
 
             GraphicsDevice.SetRenderTarget(null);

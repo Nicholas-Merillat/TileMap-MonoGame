@@ -21,7 +21,7 @@ namespace TileMap
         const int S = 64;
         const int SE = 128;
 
-        Dictionary<int, int> maskToTile = new Dictionary<int, int>()
+        readonly Dictionary<int, int> maskToTile = new Dictionary<int, int>()
         {
             { 2, 1 }, { 8, 2 }, { 10, 3 }, { 11, 4 },
             { 16, 5 }, { 18, 6 }, { 22, 7 }, { 24, 8 },

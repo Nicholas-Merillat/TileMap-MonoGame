@@ -28,22 +28,22 @@ namespace TileMap
             Y = position.Y;
 
             // Input
-            if (Keyboard.GetState().IsKeyDown(Keys.A))
-            {
-                position.X -= cameraSpeed * deltaTime;
-            }
-            if (Keyboard.GetState().IsKeyDown(Keys.D))
-            {
-                position.X += cameraSpeed * deltaTime;
-            }
-            if (Keyboard.GetState().IsKeyDown(Keys.W))
-            {
-                position.Y -= cameraSpeed * deltaTime;
-            }
-            if (Keyboard.GetState().IsKeyDown(Keys.S))
-            {
-                position.Y += cameraSpeed * deltaTime;
-            }
+            //if (Keyboard.GetState().IsKeyDown(Keys.A))
+            //{
+            //    position.X -= cameraSpeed * deltaTime;
+            //}
+            //if (Keyboard.GetState().IsKeyDown(Keys.D))
+            //{
+            //    position.X += cameraSpeed * deltaTime;
+            //}
+            //if (Keyboard.GetState().IsKeyDown(Keys.W))
+            //{
+            //    position.Y -= cameraSpeed * deltaTime;
+            //}
+            //if (Keyboard.GetState().IsKeyDown(Keys.S))
+            //{
+            //    position.Y += cameraSpeed * deltaTime;
+            //}
 
             // Boundaries
             if (position.X < 0)
