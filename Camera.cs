@@ -11,8 +11,6 @@ namespace TileMap
 {
     internal class Camera
     {
-        private float cameraSpeed = 2f;
-
         public Vector2 position;
 
         public Camera(Vector2 position)

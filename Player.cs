@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices.Swift;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,14 +16,17 @@ namespace TileMap
         private const float Gravity = 0.1f;
         private const float Speed = 0.1f;
         private const float MaxSpeed = 1.25f;
+        private const float JumpForce = 2.5f;
 
         public readonly int Width = 8;
         public readonly int Height = 16;
 
+        private int direction;
+        private bool wantToJump;
         private Texture2D texture;
         private TileMap tilemap;
         
-        public int direction;
+        public bool onGround;
         public Vector2 position;
         public Vector2 velocity;
 
@@ -35,23 +39,11 @@ namespace TileMap
 
         public void Update(float deltaTime)
         {
-            if (Keyboard.GetState().IsKeyDown(Keys.A))
-            {
-                direction = -1;
-            }
-            else if (Keyboard.GetState().IsKeyDown(Keys.D))
-            {
-                direction = 1;
-            }
-            else
-            {
-                direction = 0;
-            }
+            wantToJump = Keyboard.GetState().IsKeyDown(Keys.W);
 
-            if (Keyboard.GetState().IsKeyDown(Keys.W))
-            {
-                velocity.Y = -1;
-            }
+            if (Keyboard.GetState().IsKeyDown(Keys.A)) direction = -1;
+            else if (Keyboard.GetState().IsKeyDown(Keys.D)) direction = 1;
+            else direction = 0;
 
             velocity.X = MathHelper.Lerp(velocity.X, MaxSpeed * direction, Speed * deltaTime);
             velocity.Y += Gravity * deltaTime;
@@ -69,15 +61,18 @@ namespace TileMap
             // Prepare for the horde of if statements
 
             // Floor collision
+            onGround = false;
             if (tilemap.GetTile(belowTileLeft.X, belowTileLeft.Y) != 0 && velocity.Y >= 0)
             {
                 position.Y = belowTileLeft.Y * 8 - Height;
                 velocity.Y = 0;
+                onGround = true;
             }
             else if (tilemap.GetTile(belowTileRight.X, belowTileRight.Y) != 0 && velocity.Y >= 0)
             {
                 position.Y = belowTileRight.Y * 8 - Height;
                 velocity.Y = 0;
+                onGround = true;
             }
 
             // Ceiling collision
@@ -137,6 +132,13 @@ namespace TileMap
                 position.Y = tilemap.size.Y * 8 - Height;
                 velocity.Y = 0;
             }
+
+            if (wantToJump && onGround)
+            {
+                onGround = false;
+                velocity.Y = -JumpForce;
+            }
+            else if (!wantToJump && velocity.Y < 0) velocity.Y *= 0.75f;
 
             position.X += velocity.X * deltaTime;
             position.Y += velocity.Y * deltaTime;
