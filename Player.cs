@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices.Swift;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -40,7 +39,7 @@ namespace TileMap
         public void Update(float deltaTime)
         {
             wantToJump = Keyboard.GetState().IsKeyDown(Keys.W);
-
+            
             if (Keyboard.GetState().IsKeyDown(Keys.A)) direction = -1;
             else if (Keyboard.GetState().IsKeyDown(Keys.D)) direction = 1;
             else direction = 0;
@@ -53,8 +52,8 @@ namespace TileMap
             Vector2 belowTileRight = tilemap.WorldToTile(position.X + Width - 1, position.Y + Height);
             Vector2 aboveTileLeft = tilemap.WorldToTile(position.X + 1, position.Y - 1);
             Vector2 aboveTileRight = tilemap.WorldToTile(position.X + Width - 1, position.Y - 1);
-            Vector2 rightTileTop = tilemap.WorldToTile(position.X + Width + 1, position.Y + 1);
-            Vector2 rightTileBottom = tilemap.WorldToTile(position.X + Width + 1, position.Y + Height - 1);
+            Vector2 rightTileTop = tilemap.WorldToTile(position.X + Width, position.Y + 1);
+            Vector2 rightTileBottom = tilemap.WorldToTile(position.X + Width, position.Y + Height - 1);
             Vector2 leftTileTop = tilemap.WorldToTile(position.X - 1, position.Y + 1);
             Vector2 leftTileBottom = tilemap.WorldToTile(position.X - 1, position.Y + Height - 1);
 
