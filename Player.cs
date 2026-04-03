@@ -63,13 +63,13 @@ namespace TileMap
             onGround = false;
             if (tilemap.GetTile(belowTileLeft.X, belowTileLeft.Y) != 0 && velocity.Y >= 0)
             {
-                position.Y = belowTileLeft.Y * 8 - Height;
+                position.Y = belowTileLeft.Y * GameSettings.Data.tileSize - Height;
                 velocity.Y = 0;
                 onGround = true;
             }
             else if (tilemap.GetTile(belowTileRight.X, belowTileRight.Y) != 0 && velocity.Y >= 0)
             {
-                position.Y = belowTileRight.Y * 8 - Height;
+                position.Y = belowTileRight.Y * GameSettings.Data.tileSize - Height;
                 velocity.Y = 0;
                 onGround = true;
             }
@@ -77,36 +77,36 @@ namespace TileMap
             // Ceiling collision
             if (tilemap.GetTile(aboveTileLeft.X, aboveTileLeft.Y) != 0 && velocity.Y <= 0)
             {
-                position.Y = (aboveTileLeft.Y + 1) * 8;
+                position.Y = (aboveTileLeft.Y + 1) * GameSettings.Data.tileSize;
                 velocity.Y = 0;
             }
             else if (tilemap.GetTile(aboveTileRight.X, aboveTileRight.Y) != 0 && velocity.Y <= 0)
             {
-                position.Y = (aboveTileRight.Y + 1) * 8;
+                position.Y = (aboveTileRight.Y + 1) * GameSettings.Data.tileSize;
                 velocity.Y = 0;
             }
 
             // Right collision
             if (tilemap.GetTile(rightTileTop.X, rightTileTop.Y) != 0 && velocity.X >= 0)
             {
-                position.X = rightTileTop.X * 8 - Width;
+                position.X = rightTileTop.X * GameSettings.Data.tileSize - Width;
                 velocity.X = 0;
             }
             else if (tilemap.GetTile(rightTileBottom.X, rightTileBottom.Y) != 0 && velocity.X >= 0)
             {
-                position.X = rightTileBottom.X * 8 - Width;
+                position.X = rightTileBottom.X * GameSettings.Data.tileSize - Width;
                 velocity.X = 0;
             }
 
             // Left collision
             if (tilemap.GetTile(leftTileTop.X, leftTileTop.Y) != 0 && velocity.X <= 0)
             {
-                position.X = (leftTileTop.X + 1) * 8;
+                position.X = (leftTileTop.X + 1) * GameSettings.Data.tileSize;
                 velocity.X = 0;
             }
             else if (tilemap.GetTile(leftTileBottom.X, leftTileBottom.Y) != 0 && velocity.X <= 0)
             {
-                position.X = (leftTileBottom.X + 1) * 8;
+                position.X = (leftTileBottom.X + 1) * GameSettings.Data.tileSize;
                 velocity.X = 0;
             }
 
@@ -123,12 +123,12 @@ namespace TileMap
             }
             if (position.X + 1 > (tilemap.size.X - 1) * 8 && velocity.X >= 0)
             {
-                position.X = (tilemap.size.X - 1) * 8;
+                position.X = (tilemap.size.X - 1) * GameSettings.Data.tileSize;
                 velocity.X = 0;
             }
             if (position.Y + Height + 1 > tilemap.size.Y * 8 && velocity.Y >= 0)
             {
-                position.Y = tilemap.size.Y * 8 - Height;
+                position.Y = tilemap.size.Y * GameSettings.Data.tileSize - Height;
                 velocity.Y = 0;
                 onGround = true;
             }

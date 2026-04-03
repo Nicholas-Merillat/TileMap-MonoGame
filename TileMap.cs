@@ -85,8 +85,8 @@ namespace TileMap
                 int nx = x + dx;
                 int ny = y + dy;
 
-                if (nx < 0 || ny < 0 || nx >= size.X || ny >= size.Y)
-                    return false;
+                if (nx < 0 || ny < 0 || nx >= size.X || ny >= size.Y) // Edge detection
+                    return true;
 
                 return grid[nx, ny] == id;
             }
@@ -199,7 +199,7 @@ namespace TileMap
                         if (leftLightTile > maxLight) maxLight = leftLightTile;
                         if (rightLightTile > maxLight) maxLight = rightLightTile;
 
-                        SetLightTile(x, y, maxLight - 12);
+                        SetLightTile(x, y, maxLight - 18);
                         Color tileColor = new Color(GetLightTile(x, y), GetLightTile(x, y), GetLightTile(x, y), 255);
                         // LIGHTING
 

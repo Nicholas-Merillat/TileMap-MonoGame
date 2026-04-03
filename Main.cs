@@ -9,11 +9,11 @@ namespace TileMap
 {
     public class Main : Game
     {
-        private readonly int physicsFPS = 60;
+        private const int PhysicsFPS = 60;
 
-        private readonly Vector2 screenSize = new Vector2(1280, 720);
-        private Vector2 viewportSize = new Vector2(640, 360);
-        private int screenScaleFactor = 1280 / 640;
+        private Vector2 screenSize = GameSettings.Data.screenSize;
+        private Vector2 viewportSize = GameSettings.Data.viewportSize;
+        private int screenScaleFactor = (int)GameSettings.Data.screenSize.X / (int)GameSettings.Data.viewportSize.X;
 
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
@@ -62,50 +62,20 @@ namespace TileMap
             texture = Content.Load<Texture2D>("Images/Grass");
             playerTexture = Content.Load<Texture2D>("Images/UFOMater");
             camera = new Camera(Vector2.Zero);
-            tilemap = new TileMap(viewportSize, new Vector2(100, 50), 8, texture, camera);
+            tilemap = new TileMap(viewportSize, GameSettings.Data.tileMapSize, GameSettings.Data.tileSize, texture, camera);
             player = new Player(Vector2.Zero, playerTexture, tilemap);
         }
 
         protected override void Update(GameTime gameTime)
         {
-            deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds * physicsFPS;
-            fps = 1 / (deltaTime / physicsFPS);
+            deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds * PhysicsFPS;
+            fps = 1 / (deltaTime / PhysicsFPS);
 
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
             _previousMouseState = _currentMouseState;
             _currentMouseState = Mouse.GetState();
-
-            // If you do not dispose of the viewport before scaling it, you will get genuinely insane memory leaks, like gigabytes
-            if (Keyboard.GetState().IsKeyDown(Keys.OemMinus))
-            {   
-                viewport.Dispose();
-                viewportSize.X += 2 * deltaTime;
-                viewportSize.Y += (2 / (screenSize.X / screenSize.Y)) * deltaTime;
-                if (viewportSize.X > 640)
-                {
-                    viewportSize = new Vector2(640, 360);
-                }
-                viewport = new RenderTarget2D(GraphicsDevice, (int)viewportSize.X, (int)viewportSize.Y);
-            }
-            if (Keyboard.GetState().IsKeyDown(Keys.OemPlus))
-            {
-                viewport.Dispose();
-                viewportSize.X -= 2 * deltaTime;
-                viewportSize.Y -= (2 / (screenSize.X / screenSize.Y)) * deltaTime;
-                if (viewportSize.X < 10)
-                {
-                    viewportSize = new Vector2(10, 10 / screenScaleFactor);
-                }
-                viewport = new RenderTarget2D(GraphicsDevice, (int)viewportSize.X, (int)viewportSize.Y);
-            }
-            if (Keyboard.GetState().IsKeyDown(Keys.Back))
-            {
-                viewport.Dispose();
-                viewportSize = new Vector2(640, 360);
-                viewport = new RenderTarget2D(GraphicsDevice, (int)viewportSize.X, (int)viewportSize.Y);
-            }
 
             player.Update(deltaTime);
             camera.Update(deltaTime, player);

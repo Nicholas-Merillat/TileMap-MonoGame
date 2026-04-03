@@ -20,8 +20,8 @@ namespace TileMap
 
         public void Update(float deltaTime, Player player)
         {
-            position.X = (player.position.X + player.Width / 2) - 640 / 2;
-            position.Y = (player.position.Y + player.Height / 2) - 360 / 2;
+            position.X = (player.position.X + player.Width / 2) - GameSettings.Data.viewportSize.X / 2;
+            position.Y = (player.position.Y + player.Height / 2) - GameSettings.Data.viewportSize.Y / 2;
 
             // Boundaries
             if (position.X < 0)
