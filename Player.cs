@@ -12,13 +12,13 @@ namespace TileMap
 {
     internal class Player
     {
-        private const float Gravity = 0.1f;
-        private const float Speed = 0.1f;
+        private const float Gravity = 0.15f;
+        private const float Speed = 0.05f;
         private const float MaxSpeed = 1.25f;
-        private const float JumpForce = 2.5f;
+        private const float JumpForce = 3f;
 
-        public readonly int Width = 8;
-        public readonly int Height = 16;
+        public readonly int Width = 7;
+        public readonly int Height = 15;
 
         private int direction;
         private bool wantToJump;
@@ -130,6 +130,7 @@ namespace TileMap
             {
                 position.Y = tilemap.size.Y * 8 - Height;
                 velocity.Y = 0;
+                onGround = true;
             }
 
             if (wantToJump && onGround)

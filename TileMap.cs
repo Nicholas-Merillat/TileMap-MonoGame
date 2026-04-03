@@ -38,6 +38,7 @@ namespace TileMap
         };
 
         private int[,] grid;
+        private int[,] lightGrid;
         private Vector2 screenSize;
         private Camera camera;
 
@@ -55,8 +56,9 @@ namespace TileMap
 
             tileset = new TileSet(texture, tileSize);
 
-            // Create grid and generate
+            // Create grid and lightGrid, then generate
             grid = new int[(int)size.X, (int)size.Y];
+            lightGrid = new int[(int)size.X, (int)size.Y];
             for (int x = 0; x < size.X; x++)
             {
                 for (int y = 0; y < size.Y; y++)
@@ -115,9 +117,17 @@ namespace TileMap
         {
             grid[(int)x, (int)y] = id;
         }
+        public void SetLightTile(float x, float y, int brightness)
+        {
+            lightGrid[(int)x, (int)y] = brightness;
+        }
         public int GetTile(float x, float y)
         {
             return grid[(int)Math.Clamp(x, 0, size.X-1), (int)Math.Clamp(y, 0, size.Y-1)];
+        }
+        public int GetLightTile(float x, float y)
+        {
+            return lightGrid[(int)Math.Clamp(x, 0, size.X - 1), (int)Math.Clamp(y, 0, size.Y - 1)];
         }
         public Vector2 ScreenToTile(float x, float y)
         {
@@ -157,12 +167,18 @@ namespace TileMap
             {
                 for (int x = (int)cameraTilePosition.X; x < visibleRange.X; x++)
                 {
-                    if (x >= size.X || y >= size.Y || GetTile(x,y) == 0) // Edge detection and skip air
+                    if (x >= size.X || y >= size.Y) // Edge detection
                     {
                         continue;
                     }
+                    else if (GetTile(x, y) == 0) {
+                        SetLightTile(x, y, 255);
+                        continue;
+                    }
                     else if (GetTile(x, y) == 1)
-                    {
+                    {   
+
+                        // BITMASKING
                         int mask = GetMask(x, y, 1);
                         int bitmask = 0;
 
@@ -170,9 +186,25 @@ namespace TileMap
                             bitmask = tileIndex;
                         else
                             bitmask = 47; // Fallback to last tile in tileset
+                        // BITMASKING
+
+                        // LIGHTING
+                        int topLightTile = GetLightTile(x, y - 1);
+                        int bottomLightTile = GetLightTile(x, y + 1);
+                        int leftLightTile = GetLightTile(x - 1, y);
+                        int rightLightTile = GetLightTile(x + 1, y);
+
+                        int maxLight = topLightTile;
+                        if (bottomLightTile > maxLight) maxLight = bottomLightTile;
+                        if (leftLightTile > maxLight) maxLight = leftLightTile;
+                        if (rightLightTile > maxLight) maxLight = rightLightTile;
+
+                        SetLightTile(x, y, maxLight - 12);
+                        Color tileColor = new Color(GetLightTile(x, y), GetLightTile(x, y), GetLightTile(x, y), 255);
+                        // LIGHTING
 
                         Vector2 tilePos = new Vector2((x * tileSize) - camera.position.X, (y * tileSize) - camera.position.Y);
-                        spriteBatch.Draw(tileset.texture, new Vector2((int)Math.Floor(tilePos.X), (int)Math.Floor(tilePos.Y)), tileset.GetTileRect(bitmask), Color.White);
+                        spriteBatch.Draw(tileset.texture, new Vector2((int)Math.Floor(tilePos.X), (int)Math.Floor(tilePos.Y)), tileset.GetTileRect(bitmask), tileColor);
                     }
                 }
             }
