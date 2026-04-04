@@ -24,8 +24,8 @@ namespace TileMap
         {   
             if (SmoothPosition)
             {
-                position.X = MathHelper.Lerp(position.X, (player.position.X + player.Width / 2) - GameSettings.Data.viewportSize.X / 2, 0.1f * deltaTime);
-                position.Y = MathHelper.Lerp(position.Y, (player.position.Y + player.Height / 2) - GameSettings.Data.viewportSize.Y / 2, 0.1f * deltaTime);
+                position.X = MathHelper.Lerp(position.X, (int)(player.position.X + player.Width / 2 - GameSettings.Data.viewportSize.X / 2), 0.5f * deltaTime);
+                position.Y = MathHelper.Lerp(position.Y, (int)(player.position.Y + player.Height / 2 - GameSettings.Data.viewportSize.Y / 2), 0.5f * deltaTime);
             }
             else
             {

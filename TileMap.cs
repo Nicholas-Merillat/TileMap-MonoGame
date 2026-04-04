@@ -60,20 +60,7 @@ namespace TileMap
             // Create grid and lightGrid, then generate
             grid = new int[(int)size.X, (int)size.Y];
             lightGrid = new int[(int)size.X, (int)size.Y];
-            for (int x = 0; x < size.X; x++)
-            {
-                for (int y = 0; y < size.Y; y++)
-                {   
-                    if (y >= 100)
-                    {
-                        SetTile(x, y, 1);
-                    }
-                    else
-                    {
-                        SetTile(x, y, 0);
-                    }
-                }
-            }
+            GenerateWorld();
         }
 
         public void SetTile(float x, float y, int id)
@@ -99,6 +86,24 @@ namespace TileMap
         public Vector2 WorldToTile(float x, float y)
         {
             return new Vector2((int)Math.Floor(x / tileSize), (int)Math.Floor(y / tileSize));
+        }
+
+        public void GenerateWorld()
+        {
+            for (int y = 0; y < size.Y; y++)
+            {
+                for (int x = 0; x < size.X; x++)
+                {
+                    if (y >= 50)
+                    {
+                        SetTile(x, y, 1);
+                    }
+                    else
+                    {
+                        SetTile(x, y, 0);
+                    }
+                }
+            }
         }
 
         // Gemini was PARTIALLY used to help get autotiling working (although its dumb as fuck and I had to mess with the diagonal tiles to get it working)
@@ -209,7 +214,7 @@ namespace TileMap
                         Color tileColor = new Color(GetLightTile(x, y), GetLightTile(x, y), GetLightTile(x, y), 255);
                         // LIGHTING
 
-                        //if (maxLight <= 0)
+                        //if (tileColor == new Color(0,0,0,255))
                         //{
                         //    continue;
                         //}

@@ -16,6 +16,7 @@ namespace TileMap
         private const float Speed = 0.05f;
         private const float MaxSpeed = 1.25f;
         private const float JumpForce = 3f;
+        private const float MaxFallSpeed = 6f;
 
         public readonly int Width = 7;
         public readonly int Height = 15;
@@ -46,21 +47,14 @@ namespace TileMap
 
             velocity.X = MathHelper.Lerp(velocity.X, MaxSpeed * direction, Speed * deltaTime);
             velocity.Y += Gravity * deltaTime;
-            
-            // Collision Sensors
-            Vector2 belowTileLeft = tilemap.WorldToTile(position.X + 1, position.Y + Height);
-            Vector2 belowTileRight = tilemap.WorldToTile(position.X + Width - 1, position.Y + Height);
-            Vector2 aboveTileLeft = tilemap.WorldToTile(position.X + 1, position.Y - 1);
-            Vector2 aboveTileRight = tilemap.WorldToTile(position.X + Width - 1, position.Y - 1);
-            Vector2 rightTileTop = tilemap.WorldToTile(position.X + Width, position.Y + 3);
-            Vector2 rightTileBottom = tilemap.WorldToTile(position.X + Width, position.Y + Height - 3);
-            Vector2 leftTileTop = tilemap.WorldToTile(position.X - 1, position.Y + 3);
-            Vector2 leftTileBottom = tilemap.WorldToTile(position.X - 1, position.Y + Height - 3);
+            if (velocity.Y > MaxFallSpeed) velocity.Y = MaxFallSpeed;
 
             // Prepare for the horde of if statements
 
             // Floor collision
             onGround = false;
+            Vector2 belowTileLeft = tilemap.WorldToTile(position.X + 1, position.Y + Height);
+            Vector2 belowTileRight = tilemap.WorldToTile(position.X + Width - 1, position.Y + Height);
             if (tilemap.GetTile(belowTileLeft.X, belowTileLeft.Y) != 0 && velocity.Y >= 0)
             {
                 position.Y = belowTileLeft.Y * GameSettings.Data.tileSize - Height;
@@ -75,6 +69,8 @@ namespace TileMap
             }
 
             // Ceiling collision
+            Vector2 aboveTileLeft = tilemap.WorldToTile(position.X + 1, position.Y);
+            Vector2 aboveTileRight = tilemap.WorldToTile(position.X + Width - 1, position.Y);
             if (tilemap.GetTile(aboveTileLeft.X, aboveTileLeft.Y) != 0 && velocity.Y <= 0)
             {
                 position.Y = (aboveTileLeft.Y + 1) * GameSettings.Data.tileSize;
@@ -87,6 +83,8 @@ namespace TileMap
             }
 
             // Right collision
+            Vector2 rightTileTop = tilemap.WorldToTile(position.X + Width, position.Y);
+            Vector2 rightTileBottom = tilemap.WorldToTile(position.X + Width, position.Y + Height - 1);
             if (tilemap.GetTile(rightTileTop.X, rightTileTop.Y) != 0 && velocity.X >= 0)
             {
                 position.X = rightTileTop.X * GameSettings.Data.tileSize - Width;
@@ -99,6 +97,8 @@ namespace TileMap
             }
 
             // Left collision
+            Vector2 leftTileTop = tilemap.WorldToTile(position.X - 1, position.Y);
+            Vector2 leftTileBottom = tilemap.WorldToTile(position.X - 1, position.Y + Height - 1);
             if (tilemap.GetTile(leftTileTop.X, leftTileTop.Y) != 0 && velocity.X <= 0)
             {
                 position.X = (leftTileTop.X + 1) * GameSettings.Data.tileSize;
