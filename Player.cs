@@ -52,10 +52,10 @@ namespace TileMap
             Vector2 belowTileRight = tilemap.WorldToTile(position.X + Width - 1, position.Y + Height);
             Vector2 aboveTileLeft = tilemap.WorldToTile(position.X + 1, position.Y - 1);
             Vector2 aboveTileRight = tilemap.WorldToTile(position.X + Width - 1, position.Y - 1);
-            Vector2 rightTileTop = tilemap.WorldToTile(position.X + Width, position.Y + 1);
-            Vector2 rightTileBottom = tilemap.WorldToTile(position.X + Width, position.Y + Height - 1);
-            Vector2 leftTileTop = tilemap.WorldToTile(position.X - 1, position.Y + 1);
-            Vector2 leftTileBottom = tilemap.WorldToTile(position.X - 1, position.Y + Height - 1);
+            Vector2 rightTileTop = tilemap.WorldToTile(position.X + Width, position.Y + 3);
+            Vector2 rightTileBottom = tilemap.WorldToTile(position.X + Width, position.Y + Height - 3);
+            Vector2 leftTileTop = tilemap.WorldToTile(position.X - 1, position.Y + 3);
+            Vector2 leftTileBottom = tilemap.WorldToTile(position.X - 1, position.Y + Height - 3);
 
             // Prepare for the horde of if statements
 
@@ -146,7 +146,7 @@ namespace TileMap
 
         public void Draw(SpriteBatch spriteBatch, Vector2 cameraPosition)
         {
-            spriteBatch.Draw(texture, new Rectangle((int)position.X - (int)cameraPosition.X, (int)position.Y - (int)cameraPosition.Y, Width, Height), Color.White);
+            spriteBatch.Draw(texture, new Rectangle((int)position.X - (int)cameraPosition.X, (int)position.Y - (int)cameraPosition.Y, Width, Height), Color.Black);
         }
     }
 }

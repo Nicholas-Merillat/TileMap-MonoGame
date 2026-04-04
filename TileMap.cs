@@ -6,22 +6,23 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TileMap
 {
     internal class TileMap
     {
-        const int NW = 1;
-        const int N = 2;
-        const int NE = 4;
-        const int W = 8;
-        const int E = 16;
-        const int SW = 32;
-        const int S = 64;
-        const int SE = 128;
+        private const int NW = 1;
+        private const int N = 2;
+        private const int NE = 4;
+        private const int W = 8;
+        private const int E = 16;
+        private const int SW = 32;
+        private const int S = 64;
+        private const int SE = 128;
 
-        readonly Dictionary<int, int> maskToTile = new Dictionary<int, int>()
+        private readonly Dictionary<int, int> maskToTile = new Dictionary<int, int>()
         {
             { 2, 1 }, { 8, 2 }, { 10, 3 }, { 11, 4 },
             { 16, 5 }, { 18, 6 }, { 22, 7 }, { 24, 8 },
@@ -63,7 +64,7 @@ namespace TileMap
             {
                 for (int y = 0; y < size.Y; y++)
                 {   
-                    if (y >= 15)
+                    if (y >= 100)
                     {
                         SetTile(x, y, 1);
                     }
@@ -75,10 +76,35 @@ namespace TileMap
             }
         }
 
+        public void SetTile(float x, float y, int id)
+        {
+            grid[(int)x, (int)y] = id;
+        }
+        public void SetLightTile(float x, float y, int brightness)
+        {
+            lightGrid[(int)x, (int)y] = brightness;
+        }
+        public int GetTile(float x, float y)
+        {
+            return grid[(int)Math.Clamp(x, 0, size.X - 1), (int)Math.Clamp(y, 0, size.Y - 1)];
+        }
+        public int GetLightTile(float x, float y)
+        {
+            return lightGrid[(int)Math.Clamp(x, 0, size.X - 1), (int)Math.Clamp(y, 0, size.Y - 1)];
+        }
+        public Vector2 ScreenToTile(float x, float y)
+        {
+            return new Vector2((int)Math.Floor((x / tileSize) + camera.position.X / tileSize), (int)Math.Floor((y / tileSize) + camera.position.Y / tileSize));
+        }
+        public Vector2 WorldToTile(float x, float y)
+        {
+            return new Vector2((int)Math.Floor(x / tileSize), (int)Math.Floor(y / tileSize));
+        }
+
         // Gemini was PARTIALLY used to help get autotiling working (although its dumb as fuck and I had to mess with the diagonal tiles to get it working)
         // It was really nice for the dictionary tho lowk
         public int GetMask(int x, int y, int id)
-        {   
+        {
             // Edge check
             bool Check(int dx, int dy)
             {
@@ -88,7 +114,7 @@ namespace TileMap
                 if (nx < 0 || ny < 0 || nx >= size.X || ny >= size.Y) // Edge detection
                     return true;
 
-                return grid[nx, ny] == id;
+                return GetTile(nx, ny) == id;
             }
 
             int mask = 0;
@@ -113,29 +139,19 @@ namespace TileMap
             return mask;
         }
 
-        public void SetTile(float x, float y, int id)
+        public void calculateLighting(int x, int y)
         {
-            grid[(int)x, (int)y] = id;
-        }
-        public void SetLightTile(float x, float y, int brightness)
-        {
-            lightGrid[(int)x, (int)y] = brightness;
-        }
-        public int GetTile(float x, float y)
-        {
-            return grid[(int)Math.Clamp(x, 0, size.X-1), (int)Math.Clamp(y, 0, size.Y-1)];
-        }
-        public int GetLightTile(float x, float y)
-        {
-            return lightGrid[(int)Math.Clamp(x, 0, size.X - 1), (int)Math.Clamp(y, 0, size.Y - 1)];
-        }
-        public Vector2 ScreenToTile(float x, float y)
-        {
-            return new Vector2((int)Math.Floor((x / tileSize) + camera.position.X / tileSize), (int)Math.Floor((y / tileSize) + camera.position.Y / tileSize));
-        }
-        public Vector2 WorldToTile(float x, float y)
-        {
-            return new Vector2((int)Math.Floor(x / tileSize), (int)Math.Floor(y / tileSize));
+            int topLightTile = GetLightTile(x, y - 1);
+            int bottomLightTile = GetLightTile(x, y + 1);
+            int leftLightTile = GetLightTile(x - 1, y);
+            int rightLightTile = GetLightTile(x + 1, y);
+
+            int maxLight = topLightTile;
+            if (bottomLightTile > maxLight) maxLight = bottomLightTile;
+            if (leftLightTile > maxLight) maxLight = leftLightTile;
+            if (rightLightTile > maxLight) maxLight = rightLightTile;
+
+            SetLightTile(x, y, maxLight - 18);
         }
 
         public void Update(MouseState mouseState, int screenScaleFactor)
@@ -189,19 +205,14 @@ namespace TileMap
                         // BITMASKING
 
                         // LIGHTING
-                        int topLightTile = GetLightTile(x, y - 1);
-                        int bottomLightTile = GetLightTile(x, y + 1);
-                        int leftLightTile = GetLightTile(x - 1, y);
-                        int rightLightTile = GetLightTile(x + 1, y);
-
-                        int maxLight = topLightTile;
-                        if (bottomLightTile > maxLight) maxLight = bottomLightTile;
-                        if (leftLightTile > maxLight) maxLight = leftLightTile;
-                        if (rightLightTile > maxLight) maxLight = rightLightTile;
-
-                        SetLightTile(x, y, maxLight - 18);
+                        calculateLighting(x, y);
                         Color tileColor = new Color(GetLightTile(x, y), GetLightTile(x, y), GetLightTile(x, y), 255);
                         // LIGHTING
+
+                        //if (maxLight <= 0)
+                        //{
+                        //    continue;
+                        //}
 
                         Vector2 tilePos = new Vector2((x * tileSize) - camera.position.X, (y * tileSize) - camera.position.Y);
                         spriteBatch.Draw(tileset.texture, new Vector2((int)Math.Floor(tilePos.X), (int)Math.Floor(tilePos.Y)), tileset.GetTileRect(bitmask), tileColor);

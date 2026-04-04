@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Diagnostics;
 using System.Net.Mime;
+using System.Threading;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace TileMap
@@ -44,7 +45,6 @@ namespace TileMap
 
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
             _graphics.PreferredBackBufferWidth = (int)screenSize.X;
             _graphics.PreferredBackBufferHeight = (int)screenSize.Y;
             _graphics.ApplyChanges();
