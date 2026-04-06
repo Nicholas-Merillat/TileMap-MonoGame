@@ -1,0 +1,10 @@
+﻿[*.cs]
+
+# IDE0090: Use 'new(...)'
+dotnet_diagnostic.IDE0090.severity = silent
+
+# RCS1089: Use --/++ operator instead of assignment
+dotnet_diagnostic.RCS1089.severity = silent
+
+# Default severity for all analyzer diagnostics
+dotnet_analyzer_diagnostic.severity = silent
