@@ -1,7 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Mime;
 using System.Threading;
 using static System.Net.Mime.MediaTypeNames;
@@ -14,7 +16,7 @@ namespace TileMap
 
         private Vector2 screenSize = GameSettings.Data.screenSize;
         private Vector2 viewportSize = GameSettings.Data.viewportSize;
-        private int screenScaleFactor = (int)GameSettings.Data.screenSize.X / (int)GameSettings.Data.viewportSize.X;
+        private float screenScaleFactor = GameSettings.Data.screenSize.X / GameSettings.Data.viewportSize.X;
 
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
@@ -26,7 +28,7 @@ namespace TileMap
         private float fps;
         private RenderTarget2D viewport;
 
-        private Texture2D texture;
+        private Texture2D[] tileTextures;
         private Texture2D playerTexture;
         private TileMap tilemap;
         private Camera camera;
@@ -59,10 +61,20 @@ namespace TileMap
 
             viewport = new RenderTarget2D(GraphicsDevice, (int)viewportSize.X, (int)viewportSize.Y);
 
-            texture = Content.Load<Texture2D>("Images/Grass");
+            tileTextures = new Texture2D[3];
+            for (int i=0; i < tileTextures.Length; i++)
+            {
+                if (i == 0)
+                {
+                    tileTextures[i] = (Content.Load<Texture2D>("Images/Grass"));
+                    continue;
+                }
+                tileTextures[i] = (Content.Load<Texture2D>("Images/Stone"));
+            }
+
             playerTexture = Content.Load<Texture2D>("Images/UFOMater");
             camera = new Camera(Vector2.Zero);
-            tilemap = new TileMap(viewportSize, GameSettings.Data.tileMapSize, GameSettings.Data.tileSize, texture, camera);
+            tilemap = new TileMap(viewportSize, GameSettings.Data.tileMapSize, GameSettings.Data.tileSize, tileTextures, camera);
             player = new Player(Vector2.Zero, playerTexture, tilemap);
         }
 

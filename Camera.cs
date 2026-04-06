@@ -11,7 +11,7 @@ namespace TileMap
 {
     internal class Camera
     {
-        private const bool SmoothPosition = false;
+        private const bool SmoothPosition = true;
 
         public Vector2 position;
 
@@ -24,8 +24,8 @@ namespace TileMap
         {   
             if (SmoothPosition)
             {
-                position.X = MathHelper.Lerp(position.X, (int)(player.position.X + player.Width / 2 - GameSettings.Data.viewportSize.X / 2), 0.5f * deltaTime);
-                position.Y = MathHelper.Lerp(position.Y, (int)(player.position.Y + player.Height / 2 - GameSettings.Data.viewportSize.Y / 2), 0.5f * deltaTime);
+                position.X = MathHelper.Lerp(position.X, (int)(player.position.X + player.Width / 2 - GameSettings.Data.viewportSize.X / 2), 0.2f * deltaTime);
+                position.Y = MathHelper.Lerp(position.Y, (int)(player.position.Y + player.Height / 2 - GameSettings.Data.viewportSize.Y / 2), 0.2f * deltaTime);
             }
             else
             {

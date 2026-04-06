@@ -146,7 +146,7 @@ namespace TileMap
 
         public void Draw(SpriteBatch spriteBatch, Vector2 cameraPosition)
         {
-            spriteBatch.Draw(texture, new Rectangle((int)position.X - (int)cameraPosition.X, (int)position.Y - (int)cameraPosition.Y, Width, Height), Color.Black);
+            spriteBatch.Draw(texture, new Rectangle((int)(position.X - cameraPosition.X), (int)(position.Y - cameraPosition.Y), Width, Height), Color.Black);
         }
     }
 }

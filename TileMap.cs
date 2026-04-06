@@ -13,6 +13,13 @@ namespace TileMap
 {
     internal class TileMap
     {
+        enum Blocks {
+            Air,
+            Grass,
+            Stone,
+            Sand
+        }
+
         private const int NW = 1;
         private const int N = 2;
         private const int NE = 4;
@@ -46,16 +53,20 @@ namespace TileMap
         public int tileSize;
         public Vector2 size;
         public Vector2 visibleRange;
-        public TileSet tileset;
+        public TileSet[] tilesets;
 
-        public TileMap(Vector2 screenSize, Vector2 size, int tileSize, Texture2D texture, Camera camera)
+        public TileMap(Vector2 screenSize, Vector2 size, int tileSize, Texture2D[] tileTextures, Camera camera)
         {
             this.screenSize = screenSize;
             this.size = size;
             this.tileSize = tileSize;
             this.camera = camera;
 
-            tileset = new TileSet(texture, tileSize);
+            tilesets = new TileSet[tileTextures.Length];
+            for (int i = 0; i < tileTextures.Length; i++)
+            {
+                tilesets[i] = new TileSet(tileTextures[i], 8);
+            }
 
             // Create grid and lightGrid, then generate
             grid = new int[(int)size.X, (int)size.Y];
@@ -94,13 +105,17 @@ namespace TileMap
             {
                 for (int x = 0; x < size.X; x++)
                 {
-                    if (y >= 50)
+                    if (y >= 50 && y <= 55)
                     {
-                        SetTile(x, y, 1);
+                        SetTile(x, y, (int)Blocks.Grass);
+                    }
+                    else if (y > 55)
+                    {
+                        SetTile(x, y, (int)Blocks.Stone);
                     }
                     else
                     {
-                        SetTile(x, y, 0);
+                        SetTile(x, y, (int)Blocks.Air);
                     }
                 }
             }
@@ -146,6 +161,8 @@ namespace TileMap
 
         public void calculateLighting(int x, int y)
         {
+            int decayFactor = 20;
+
             int topLightTile = GetLightTile(x, y - 1);
             int bottomLightTile = GetLightTile(x, y + 1);
             int leftLightTile = GetLightTile(x - 1, y);
@@ -156,21 +173,21 @@ namespace TileMap
             if (leftLightTile > maxLight) maxLight = leftLightTile;
             if (rightLightTile > maxLight) maxLight = rightLightTile;
 
-            SetLightTile(x, y, maxLight - 18);
+            SetLightTile(x, y, maxLight - decayFactor);
         }
 
-        public void Update(MouseState mouseState, int screenScaleFactor)
+        public void Update(MouseState mouseState, float screenScaleFactor)
         {
             Vector2 mousePosition = ScreenToTile(mouseState.X / screenScaleFactor, mouseState.Y / screenScaleFactor);
             if (mousePosition.X >= 0 && mousePosition.Y >= 0 && mousePosition.X < size.X && mousePosition.Y < size.Y)
             {
                 if (mouseState.RightButton == ButtonState.Pressed)
                 {
-                    SetTile(mousePosition.X, mousePosition.Y, 1);
+                    SetTile(mousePosition.X, mousePosition.Y, (int)Blocks.Grass);
                 }
                 else if (mouseState.LeftButton == ButtonState.Pressed)
                 {
-                    SetTile(mousePosition.X, mousePosition.Y, 0);
+                    SetTile(mousePosition.X, mousePosition.Y, (int)Blocks.Air);
                 }
             }
         }
@@ -188,19 +205,20 @@ namespace TileMap
             {
                 for (int x = (int)cameraTilePosition.X; x < visibleRange.X; x++)
                 {
+                    int tileId = GetTile(x, y);
                     if (x >= size.X || y >= size.Y) // Edge detection
                     {
                         continue;
                     }
-                    else if (GetTile(x, y) == 0) {
+                    else if (tileId == (int)Blocks.Air) {
                         SetLightTile(x, y, 255);
                         continue;
                     }
-                    else if (GetTile(x, y) == 1)
+                    else
                     {   
 
                         // BITMASKING
-                        int mask = GetMask(x, y, 1);
+                        int mask = GetMask(x, y, tileId);
                         int bitmask = 0;
 
                         if (maskToTile.TryGetValue(mask, out int tileIndex))
@@ -213,14 +231,9 @@ namespace TileMap
                         calculateLighting(x, y);
                         Color tileColor = new Color(GetLightTile(x, y), GetLightTile(x, y), GetLightTile(x, y), 255);
                         // LIGHTING
-
-                        //if (tileColor == new Color(0,0,0,255))
-                        //{
-                        //    continue;
-                        //}
-
+                        
                         Vector2 tilePos = new Vector2((x * tileSize) - camera.position.X, (y * tileSize) - camera.position.Y);
-                        spriteBatch.Draw(tileset.texture, new Vector2((int)Math.Floor(tilePos.X), (int)Math.Floor(tilePos.Y)), tileset.GetTileRect(bitmask), tileColor);
+                        spriteBatch.Draw(tilesets[tileId - 1].texture, new Vector2((int)Math.Floor(tilePos.X), (int)Math.Floor(tilePos.Y)), tilesets[tileId - 1].GetTileRect(bitmask), tileColor);
                     }
                 }
             }
