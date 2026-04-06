@@ -3,11 +3,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace TileMap
 {
@@ -51,9 +46,10 @@ namespace TileMap
         private Camera camera;
 
         public int tileSize;
+        public TileSet[] tilesets;
         public Vector2 size;
         public Vector2 visibleRange;
-        public TileSet[] tilesets;
+        public int visibleTiles;
 
         public TileMap(Vector2 screenSize, Vector2 size, int tileSize, Texture2D[] tileTextures, Camera camera)
         {
@@ -183,7 +179,7 @@ namespace TileMap
             {
                 if (mouseState.RightButton == ButtonState.Pressed)
                 {
-                    SetTile(mousePosition.X, mousePosition.Y, (int)Blocks.Grass);
+                    SetTile(mousePosition.X, mousePosition.Y, (int)Blocks.Sand);
                 }
                 else if (mouseState.LeftButton == ButtonState.Pressed)
                 {
@@ -201,6 +197,7 @@ namespace TileMap
             visibleRange.Y = cameraTilePosition.Y + (screenSize.Y / tileSize);
 
             // Only render visible tiles (Column major because apparently it's more memory efficient or something)
+            visibleTiles = 0;
             for (int y = (int)cameraTilePosition.Y; y < visibleRange.Y; y++)
             {
                 for (int x = (int)cameraTilePosition.X; x < visibleRange.X; x++)
@@ -215,7 +212,8 @@ namespace TileMap
                         continue;
                     }
                     else
-                    {   
+                    {
+                        visibleTiles++;
 
                         // BITMASKING
                         int mask = GetMask(x, y, tileId);

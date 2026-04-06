@@ -13,12 +13,19 @@
 
 #---------------------------------- Content ---------------------------------#
 
-#begin Fonts/Font.spritefont
+#begin Fonts/FontMedium.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Compressed
-/build:Fonts/Font.spritefont
+/build:Fonts/FontMedium.spritefont
+
+#begin Fonts/FontSmall.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:Fonts/FontSmall.spritefont
 
 #begin Images/Grass.png
 /importer:TextureImporter

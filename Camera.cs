@@ -1,11 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TileMap
 {
@@ -38,9 +31,18 @@ namespace TileMap
             {
                 position.X = 0;
             }
+            else if (position.X > (GameSettings.Data.tileMapSize.X * GameSettings.Data.tileSize) - GameSettings.Data.viewportSize.X)
+            {
+                position.X = (GameSettings.Data.tileMapSize.X * GameSettings.Data.tileSize) - GameSettings.Data.viewportSize.X;
+            }
+
             if (position.Y < 0)
             {
                 position.Y = 0;
+            }
+            else if (position.Y > (GameSettings.Data.tileMapSize.Y * GameSettings.Data.tileSize) - GameSettings.Data.viewportSize.Y)
+            {
+                position.Y = (GameSettings.Data.tileMapSize.Y * GameSettings.Data.tileSize) - GameSettings.Data.viewportSize.Y;
             }
         }
     }

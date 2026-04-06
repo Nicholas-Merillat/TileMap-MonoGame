@@ -1,12 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Net.Mime;
-using System.Threading;
-using static System.Net.Mime.MediaTypeNames;
+using System.Collections.Generic;
 
 namespace TileMap
 {
@@ -22,7 +17,8 @@ namespace TileMap
         private SpriteBatch _spriteBatch;
         private MouseState _currentMouseState;
         private MouseState _previousMouseState;
-        private SpriteFont _font;
+        private SpriteFont _fontSmall;
+        private SpriteFont _fontMedium;
 
         private float deltaTime;
         private float fps;
@@ -33,6 +29,14 @@ namespace TileMap
         private TileMap tilemap;
         private Camera camera;
         private Player player;
+
+        private Dictionary<int, string> tileNames = new Dictionary<int, string>
+        {
+            {0, "Air"},
+            {1, "Grass"},
+            {2, "Stone"},
+            {3, "Sand"},
+        };
 
         public Main()
         {
@@ -57,19 +61,15 @@ namespace TileMap
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            _font = Content.Load<SpriteFont>("Fonts/Font");
+            _fontSmall = Content.Load<SpriteFont>("Fonts/FontSmall");
+            _fontMedium = Content.Load<SpriteFont>("Fonts/FontMedium");
 
             viewport = new RenderTarget2D(GraphicsDevice, (int)viewportSize.X, (int)viewportSize.Y);
 
             tileTextures = new Texture2D[3];
             for (int i=0; i < tileTextures.Length; i++)
             {
-                if (i == 0)
-                {
-                    tileTextures[i] = (Content.Load<Texture2D>("Images/Grass"));
-                    continue;
-                }
-                tileTextures[i] = (Content.Load<Texture2D>("Images/Stone"));
+                tileTextures[i] = Content.Load<Texture2D>($"Images/{tileNames[i+1]}");
             }
 
             playerTexture = Content.Load<Texture2D>("Images/UFOMater");
@@ -116,7 +116,10 @@ namespace TileMap
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
             _spriteBatch.Draw(viewport, new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height), Color.White);
-            _spriteBatch.DrawString(_font, ((int)fps).ToString(), Vector2.Zero, Color.Yellow);
+            _spriteBatch.DrawString(_fontMedium, ((int)fps).ToString(), new Vector2(5, 0), Color.Yellow);
+            _spriteBatch.DrawString(_fontSmall, ("playerPosition: " + (int)player.position.X) + "," + ((int)player.position.Y), new Vector2(5, 40), Color.Yellow);
+            _spriteBatch.DrawString(_fontSmall, ("cameraPosition: " + (int)camera.position.X) + "," + ((int)camera.position.Y), new Vector2(5, 65), Color.Yellow);
+            _spriteBatch.DrawString(_fontSmall, ("visibleTiles: " + tilemap.visibleTiles), new Vector2(5, 90), Color.Yellow);
 
             _spriteBatch.End();
 

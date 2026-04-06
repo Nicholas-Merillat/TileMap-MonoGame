@@ -1,12 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TileMap
 {
@@ -121,12 +115,12 @@ namespace TileMap
                 position.Y = 0;
                 velocity.Y = 0;
             }
-            if (position.X + 1 > (tilemap.size.X - 1) * 8 && velocity.X >= 0)
+            if (position.X + Width > tilemap.size.X * GameSettings.Data.tileSize && velocity.X >= 0)
             {
-                position.X = (tilemap.size.X - 1) * GameSettings.Data.tileSize;
+                position.X = tilemap.size.X * GameSettings.Data.tileSize - Width;
                 velocity.X = 0;
             }
-            if (position.Y + Height + 1 > tilemap.size.Y * 8 && velocity.Y >= 0)
+            if (position.Y + Height + 1 > tilemap.size.Y * GameSettings.Data.tileSize && velocity.Y >= 0)
             {
                 position.Y = tilemap.size.Y * GameSettings.Data.tileSize - Height;
                 velocity.Y = 0;
