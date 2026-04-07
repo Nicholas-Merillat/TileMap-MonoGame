@@ -38,6 +38,7 @@ namespace TileMap
             {3, "Stone"},
             {4, "CobbleStone"},
             {5, "Clay"},
+            {6, "Wood"},
         };
 
         public Main()
@@ -123,6 +124,7 @@ namespace TileMap
             _spriteBatch.DrawString(_fontSmall, ("cameraPosition: " + (int)camera.position.X) + "," + ((int)camera.position.Y), new Vector2(5, 65), Color.Black);
             _spriteBatch.DrawString(_fontSmall, ("visibleTiles: " + tilemap.visibleTiles), new Vector2(5, 90), Color.Black);
             _spriteBatch.DrawString(_fontSmall, ("activeBlock: " + tilemap.activeBlock), new Vector2(5, 115), Color.Black);
+            _spriteBatch.DrawString(_fontSmall, ("placingWalls: " + tilemap.placingWalls), new Vector2(5, 140), Color.Black);
 
             _spriteBatch.End();
 
