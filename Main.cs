@@ -122,6 +122,7 @@ namespace TileMap
             _spriteBatch.DrawString(_fontSmall, ("playerPosition: " + (int)player.position.X) + "," + ((int)player.position.Y), new Vector2(5, 40), Color.Black);
             _spriteBatch.DrawString(_fontSmall, ("cameraPosition: " + (int)camera.position.X) + "," + ((int)camera.position.Y), new Vector2(5, 65), Color.Black);
             _spriteBatch.DrawString(_fontSmall, ("visibleTiles: " + tilemap.visibleTiles), new Vector2(5, 90), Color.Black);
+            _spriteBatch.DrawString(_fontSmall, ("activeBlock: " + tilemap.activeBlock), new Vector2(5, 115), Color.Black);
 
             _spriteBatch.End();
 

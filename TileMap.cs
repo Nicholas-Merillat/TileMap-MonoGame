@@ -3,12 +3,15 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text.Json.Serialization;
 
 namespace TileMap
 {
     internal class TileMap
     {
-        enum Blocks {
+        public int activeBlock = 1;
+        public enum Blocks {
             Air,
             Grass,
             Dirt,
@@ -16,6 +19,8 @@ namespace TileMap
             CobbleStone,
             Clay,
         }
+        private bool blockKeyPressed = false;
+        private readonly int blocksLength = Enum.GetNames(typeof(Blocks)).Length;
 
         private const int NW = 1;
         private const int N = 2;
@@ -184,12 +189,29 @@ namespace TileMap
             {
                 if (mouseState.RightButton == ButtonState.Pressed)
                 {
-                    SetTile(mousePosition.X, mousePosition.Y, (int)Blocks.Grass);
+                    SetTile(mousePosition.X, mousePosition.Y, activeBlock);
                 }
                 else if (mouseState.LeftButton == ButtonState.Pressed)
                 {
                     SetTile(mousePosition.X, mousePosition.Y, (int)Blocks.Air);
                 }
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.Q))
+            {
+                if (!blockKeyPressed)
+                {
+                    blockKeyPressed = true;
+                    activeBlock++;
+                    if (activeBlock > blocksLength - 1)
+                    {
+                        activeBlock = 1;
+                    }
+                }
+            }
+            else
+            {
+                blockKeyPressed = false;
             }
         }
 
