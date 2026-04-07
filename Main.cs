@@ -9,9 +9,9 @@ namespace TileMap
     {
         private const int PhysicsFPS = 60;
 
-        private Vector2 screenSize = GameSettings.Data.screenSize;
-        private Vector2 viewportSize = GameSettings.Data.viewportSize;
-        private float screenScaleFactor = GameSettings.Data.screenSize.X / GameSettings.Data.viewportSize.X;
+        private readonly Vector2 screenSize = GameSettings.Data.screenSize;
+        private readonly Vector2 viewportSize = GameSettings.Data.viewportSize;
+        private readonly float screenScaleFactor = GameSettings.Data.screenSize.X / GameSettings.Data.viewportSize.X;
 
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
@@ -30,12 +30,13 @@ namespace TileMap
         private Camera camera;
         private Player player;
 
-        private Dictionary<int, string> tileNames = new Dictionary<int, string>
+        private readonly Dictionary<int, string> tileNames = new Dictionary<int, string>
         {
             {0, "Air"},
             {1, "Grass"},
-            {2, "Stone"},
-            {3, "Sand"},
+            {2, "Dirt"},
+            {3, "Stone"},
+            {4, "CobbleStone"},
         };
 
         public Main()
@@ -66,7 +67,7 @@ namespace TileMap
 
             viewport = new RenderTarget2D(GraphicsDevice, (int)viewportSize.X, (int)viewportSize.Y);
 
-            tileTextures = new Texture2D[3];
+            tileTextures = new Texture2D[4];
             for (int i=0; i < tileTextures.Length; i++)
             {
                 tileTextures[i] = Content.Load<Texture2D>($"Images/{tileNames[i+1]}");
@@ -99,7 +100,7 @@ namespace TileMap
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.SetRenderTarget(viewport);
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(new Color(150,255,255));
 
             // Game stuff
             _spriteBatch.Begin();
@@ -110,16 +111,16 @@ namespace TileMap
             _spriteBatch.End();
 
             GraphicsDevice.SetRenderTarget(null);
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            //GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // Scale everything back up from 640x360
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
             _spriteBatch.Draw(viewport, new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height), Color.White);
-            _spriteBatch.DrawString(_fontMedium, ((int)fps).ToString(), new Vector2(5, 0), Color.Yellow);
-            _spriteBatch.DrawString(_fontSmall, ("playerPosition: " + (int)player.position.X) + "," + ((int)player.position.Y), new Vector2(5, 40), Color.Yellow);
-            _spriteBatch.DrawString(_fontSmall, ("cameraPosition: " + (int)camera.position.X) + "," + ((int)camera.position.Y), new Vector2(5, 65), Color.Yellow);
-            _spriteBatch.DrawString(_fontSmall, ("visibleTiles: " + tilemap.visibleTiles), new Vector2(5, 90), Color.Yellow);
+            _spriteBatch.DrawString(_fontMedium, ((int)fps).ToString(), new Vector2(5, 0), Color.Black);
+            _spriteBatch.DrawString(_fontSmall, ("playerPosition: " + (int)player.position.X) + "," + ((int)player.position.Y), new Vector2(5, 40), Color.Black);
+            _spriteBatch.DrawString(_fontSmall, ("cameraPosition: " + (int)camera.position.X) + "," + ((int)camera.position.Y), new Vector2(5, 65), Color.Black);
+            _spriteBatch.DrawString(_fontSmall, ("visibleTiles: " + tilemap.visibleTiles), new Vector2(5, 90), Color.Black);
 
             _spriteBatch.End();
 

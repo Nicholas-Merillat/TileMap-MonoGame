@@ -11,8 +11,9 @@ namespace TileMap
         enum Blocks {
             Air,
             Grass,
+            Dirt,
             Stone,
-            Sand
+            CobbleStone
         }
 
         private const int NW = 1;
@@ -101,11 +102,14 @@ namespace TileMap
             {
                 for (int x = 0; x < size.X; x++)
                 {
-                    if (y >= 50 && y <= 55)
+                    if (y == 50)
                     {
                         SetTile(x, y, (int)Blocks.Grass);
                     }
-                    else if (y > 55)
+                    else if (y > 50 && y < 55) {
+                        SetTile(x, y, (int)Blocks.Grass);
+                    }
+                    else if (y >= 55)
                     {
                         SetTile(x, y, (int)Blocks.Stone);
                     }
@@ -157,7 +161,7 @@ namespace TileMap
 
         public void calculateLighting(int x, int y)
         {
-            int decayFactor = 20;
+            int decayFactor = 24;
 
             int topLightTile = GetLightTile(x, y - 1);
             int bottomLightTile = GetLightTile(x, y + 1);
@@ -169,7 +173,7 @@ namespace TileMap
             if (leftLightTile > maxLight) maxLight = leftLightTile;
             if (rightLightTile > maxLight) maxLight = rightLightTile;
 
-            SetLightTile(x, y, maxLight - decayFactor);
+            SetLightTile(x, y, (maxLight - decayFactor));
         }
 
         public void Update(MouseState mouseState, float screenScaleFactor)
@@ -179,7 +183,7 @@ namespace TileMap
             {
                 if (mouseState.RightButton == ButtonState.Pressed)
                 {
-                    SetTile(mousePosition.X, mousePosition.Y, (int)Blocks.Sand);
+                    SetTile(mousePosition.X, mousePosition.Y, (int)Blocks.CobbleStone);
                 }
                 else if (mouseState.LeftButton == ButtonState.Pressed)
                 {
@@ -229,7 +233,7 @@ namespace TileMap
                         calculateLighting(x, y);
                         Color tileColor = new Color(GetLightTile(x, y), GetLightTile(x, y), GetLightTile(x, y), 255);
                         // LIGHTING
-                        
+
                         Vector2 tilePos = new Vector2((x * tileSize) - camera.position.X, (y * tileSize) - camera.position.Y);
                         spriteBatch.Draw(tilesets[tileId - 1].texture, new Vector2((int)Math.Floor(tilePos.X), (int)Math.Floor(tilePos.Y)), tilesets[tileId - 1].GetTileRect(bitmask), tileColor);
                     }
