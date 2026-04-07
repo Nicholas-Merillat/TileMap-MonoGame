@@ -13,7 +13,8 @@ namespace TileMap
             Grass,
             Dirt,
             Stone,
-            CobbleStone
+            CobbleStone,
+            Clay,
         }
 
         private const int NW = 1;
@@ -107,7 +108,7 @@ namespace TileMap
                         SetTile(x, y, (int)Blocks.Grass);
                     }
                     else if (y > 50 && y < 55) {
-                        SetTile(x, y, (int)Blocks.Grass);
+                        SetTile(x, y, (int)Blocks.Dirt);
                     }
                     else if (y >= 55)
                     {
@@ -183,7 +184,7 @@ namespace TileMap
             {
                 if (mouseState.RightButton == ButtonState.Pressed)
                 {
-                    SetTile(mousePosition.X, mousePosition.Y, (int)Blocks.CobbleStone);
+                    SetTile(mousePosition.X, mousePosition.Y, (int)Blocks.Grass);
                 }
                 else if (mouseState.LeftButton == ButtonState.Pressed)
                 {

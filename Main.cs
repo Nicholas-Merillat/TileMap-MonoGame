@@ -37,6 +37,7 @@ namespace TileMap
             {2, "Dirt"},
             {3, "Stone"},
             {4, "CobbleStone"},
+            {5, "Clay"},
         };
 
         public Main()
@@ -67,7 +68,7 @@ namespace TileMap
 
             viewport = new RenderTarget2D(GraphicsDevice, (int)viewportSize.X, (int)viewportSize.Y);
 
-            tileTextures = new Texture2D[4];
+            tileTextures = new Texture2D[tileNames.Count-1];
             for (int i=0; i < tileTextures.Length; i++)
             {
                 tileTextures[i] = Content.Load<Texture2D>($"Images/{tileNames[i+1]}");
