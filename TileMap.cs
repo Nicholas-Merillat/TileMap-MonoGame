@@ -4,7 +4,6 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text.Json.Serialization;
 
 namespace TileMap
 {
@@ -50,23 +49,23 @@ namespace TileMap
             { 254, 45 }, { 255, 46 }, { 0, 47 }
         };
 
-        private int[,] grid;
-        private int[,] wallGrid;
-        private int[,] lightGrid;
-        private Vector2 screenSize;
-        private Camera camera;
+        private readonly int[,] grid;
+        private readonly int[,] wallGrid;
+        private readonly int[,] lightGrid;
 
-        public int tileSize;
+        private readonly int tileSize = GameSettings.Data.tileSize;
+        private readonly Camera camera;
+
+        private Vector2 mousePosition;
+
         public TileSet[] tilesets;
         public Vector2 size;
         public Vector2 visibleRange;
         public int visibleTiles;
 
-        public TileMap(Vector2 screenSize, Vector2 size, int tileSize, Texture2D[] tileTextures, Camera camera)
+        public TileMap(Vector2 size, Texture2D[] tileTextures, Camera camera)
         {
-            this.screenSize = screenSize;
             this.size = size;
-            this.tileSize = tileSize;
             this.camera = camera;
 
             tilesets = new TileSet[tileTextures.Length];
@@ -127,13 +126,13 @@ namespace TileMap
                         SetWallTile(x, y, (int)Blocks.Grass);
                     }
                     else if (y > 50 && y < 55) {
-                        SetTile(x, y, (int)Blocks.Grass);
-                        SetWallTile(x, y, (int)Blocks.Grass);
+                        SetTile(x, y, (int)Blocks.Dirt);
+                        SetWallTile(x, y, (int)Blocks.Dirt);
                     }
                     else if (y >= 55)
                     {
-                        SetTile(x, y, (int)Blocks.Grass);
-                        SetWallTile(x, y, (int)Blocks.Grass);
+                        SetTile(x, y, (int)Blocks.Stone);
+                        SetWallTile(x, y, (int)Blocks.Stone);
                     }
                     else
                     {
@@ -143,8 +142,6 @@ namespace TileMap
             }
         }
 
-        // Gemini was PARTIALLY used to help get autotiling working (although its dumb as fuck and I had to mess with the diagonal tiles to get it working)
-        // It was really nice for the dictionary tho lowk
         public int GetMask(int x, int y, int id, bool isWall)
         {
             // Edge check
@@ -201,7 +198,7 @@ namespace TileMap
 
         public void Update(MouseState mouseState, float screenScaleFactor)
         {
-            Vector2 mousePosition = ScreenToTile(mouseState.X / screenScaleFactor, mouseState.Y / screenScaleFactor);
+            mousePosition = ScreenToTile(mouseState.X / screenScaleFactor, mouseState.Y / screenScaleFactor);
             if (mousePosition.X >= 0 && mousePosition.Y >= 0 && mousePosition.X < size.X && mousePosition.Y < size.Y)
             {
                 if (mouseState.RightButton == ButtonState.Pressed)
@@ -216,7 +213,7 @@ namespace TileMap
                 }
             }
 
-            if (Keyboard.GetState().IsKeyDown(Keys.Q))
+            if (Keyboard.GetState().IsKeyDown(Keys.Tab))
             {
                 if (!blockKeyPressed)
                 {
@@ -233,7 +230,7 @@ namespace TileMap
                 blockKeyPressed = false;
             }
 
-            if (Keyboard.GetState().IsKeyDown(Keys.LeftShift))
+            if (mouseState.MiddleButton == ButtonState.Pressed)
             {
                 if (!layerKeyPressed)
                 {
@@ -253,8 +250,8 @@ namespace TileMap
             // TODO: Move this camera stuff out of draw
             Vector2 cameraTilePosition = (camera.position / new Vector2(tileSize));
 
-            visibleRange.X = cameraTilePosition.X + (screenSize.X / tileSize);
-            visibleRange.Y = cameraTilePosition.Y + (screenSize.Y / tileSize);
+            visibleRange.X = cameraTilePosition.X + (GameSettings.Data.viewportSize.X / tileSize);
+            visibleRange.Y = cameraTilePosition.Y + (GameSettings.Data.viewportSize.Y / tileSize);
 
             // Only render visible tiles (Column major because apparently it's more memory efficient or something)
             visibleTiles = 0;
@@ -274,7 +271,6 @@ namespace TileMap
                     }
                     else
                     {
-
                         // BITMASKING
                         int mask = GetMask(x, y, tileID, false);
                         int bitmask = 0;

@@ -77,7 +77,7 @@ namespace TileMap
 
             playerTexture = Content.Load<Texture2D>("Images/UFOMater");
             camera = new Camera(Vector2.Zero);
-            tilemap = new TileMap(viewportSize, GameSettings.Data.tileMapSize, GameSettings.Data.tileSize, tileTextures, camera);
+            tilemap = new TileMap(GameSettings.Data.tileMapSize, tileTextures, camera);
             player = new Player(Vector2.Zero, playerTexture, tilemap);
         }
 
