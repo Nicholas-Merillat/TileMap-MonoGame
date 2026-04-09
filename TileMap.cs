@@ -110,10 +110,10 @@ namespace TileMap
 
         public void GenerateWorld()
         {
-            int frequency = 2;
+            float frequency = 0.5f;
 
             FastNoiseLite noise = new FastNoiseLite();
-            noise.SetNoiseType(FastNoiseLite.NoiseType.Perlin);
+            noise.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2);
             noise.SetSeed(578434);
 
             for (int y = 0; y < size.Y; y++)
@@ -122,7 +122,7 @@ namespace TileMap
                 {   
                     if (y >= 50)
                     {
-                        if (noise.GetNoise(x * frequency, y * frequency) > 0.2)
+                        if (noise.GetNoise(x * frequency, y * frequency) < 0.2)
                         {
                             SetTile(x, y, Tile.Block.Grass);
                             SetWallTile(x, y, Tile.Block.Grass);
@@ -138,6 +138,15 @@ namespace TileMap
                         SetTile(x, y, Tile.Block.Air);
                         SetWallTile(x, y, Tile.Block.Air);
                     }
+                }
+            }
+
+            // Lighting
+            for (int y = 0; y < size.Y; y++)
+            {
+                for (int x = 0; x < size.X; x++)
+                {
+                    calculateLighting(x, y);
                 }
             }
         }
@@ -181,6 +190,12 @@ namespace TileMap
 
         public void calculateLighting(int x, int y)
         {
+            if (GetTile(x, y).ID == Tile.Block.Air && GetWallTile(x, y).ID == Tile.Block.Air)
+            {
+                SetLightTile(x, y, 255);
+                return;
+            }
+
             double decayFactor = 32;
 
             int topLightTile = GetLightTile(x, y - 1);
@@ -262,14 +277,7 @@ namespace TileMap
                     Tile tile = GetTile(x, y);
                     Tile wallTile = GetWallTile(x, y);
 
-                    if (x >= size.X || y >= size.Y) // Edge detection
-                    {
-                        continue;
-                    }
-                    if (tile.ID == Tile.Block.Air && wallTile.ID == Tile.Block.Air) {
-                        SetLightTile(x, y, 255);
-                    }
-                    else
+                    if (x < size.X || y < size.Y)
                     {
                         // BITMASKING
                         int mask = GetMask(x, y, tile.ID, false);
