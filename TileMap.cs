@@ -10,19 +10,11 @@ namespace TileMap
     internal class TileMap
     {
         public bool placingWalls = false;
-        public int activeBlock = 1;
-        public enum Blocks {
-            Air,
-            Grass,
-            Dirt,
-            Stone,
-            CobbleStone,
-            Clay,
-            Wood,
-        }
+        public Tile.Block activeBlock = Tile.Block.Grass;
+
         private bool layerKeyPressed = false;
         private bool blockKeyPressed = false;
-        private readonly int blocksLength = Enum.GetNames(typeof(Blocks)).Length;
+        private readonly int blocksLength = Enum.GetNames(typeof(Tile.Block)).Length;
 
         private const int NW = 1;
         private const int N = 2;
@@ -49,12 +41,13 @@ namespace TileMap
             { 254, 45 }, { 255, 46 }, { 0, 47 }
         };
 
-        private readonly int[,] grid;
-        private readonly int[,] wallGrid;
+        private readonly Tile[,] grid;
+        private readonly Tile[,] wallGrid;
         private readonly int[,] lightGrid;
 
         private readonly int tileSize = GameSettings.Data.tileSize;
         private readonly Camera camera;
+        private readonly Texture2D cursorTexture;
 
         private Vector2 mousePosition;
 
@@ -63,10 +56,11 @@ namespace TileMap
         public Vector2 visibleRange;
         public int visibleTiles;
 
-        public TileMap(Vector2 size, Texture2D[] tileTextures, Camera camera)
+        public TileMap(Vector2 size, Texture2D[] tileTextures, Camera camera, Texture2D cursorTexture)
         {
             this.size = size;
             this.camera = camera;
+            this.cursorTexture = cursorTexture;
 
             tilesets = new TileSet[tileTextures.Length];
             for (int i = 0; i < tileTextures.Length; i++)
@@ -75,29 +69,29 @@ namespace TileMap
             }
 
             // Create grid and lightGrid, then generate
-            grid = new int[(int)size.X, (int)size.Y];
-            wallGrid = new int[(int)size.X, (int)size.Y];
+            grid = new Tile[(int)size.X, (int)size.Y];
+            wallGrid = new Tile[(int)size.X, (int)size.Y];
             lightGrid = new int[(int)size.X, (int)size.Y];
             GenerateWorld();
         }
 
-        public void SetTile(float x, float y, int id)
+        public void SetTile(float x, float y, Tile.Block ID)
         {
-            grid[(int)x, (int)y] = id;
+            grid[(int)x, (int)y] = new Tile(ID);
         }
-        public void SetWallTile(float x, float y, int id)
+        public void SetWallTile(float x, float y, Tile.Block ID)
         {
-            wallGrid[(int)x, (int)y] = id;
+            wallGrid[(int)x, (int)y] = new Tile(ID);
         }
         public void SetLightTile(float x, float y, int brightness)
         {
-            lightGrid[(int)x, (int)y] = brightness;
+            lightGrid[(int)Math.Clamp(x, 0, size.X - 1), (int)Math.Clamp(y, 0, size.Y - 1)] = brightness;
         }
-        public int GetTile(float x, float y)
+        public Tile GetTile(float x, float y)
         {
             return grid[(int)Math.Clamp(x, 0, size.X - 1), (int)Math.Clamp(y, 0, size.Y - 1)];
         }
-        public int GetWallTile(float x, float y)
+        public Tile GetWallTile(float x, float y)
         {
             return wallGrid[(int)Math.Clamp(x, 0, size.X - 1), (int)Math.Clamp(y, 0, size.Y - 1)];
         }
@@ -116,33 +110,39 @@ namespace TileMap
 
         public void GenerateWorld()
         {
+            int frequency = 2;
+
+            FastNoiseLite noise = new FastNoiseLite();
+            noise.SetNoiseType(FastNoiseLite.NoiseType.Perlin);
+            noise.SetSeed(578434);
+
             for (int y = 0; y < size.Y; y++)
             {
                 for (int x = 0; x < size.X; x++)
-                {
-                    if (y == 50)
+                {   
+                    if (y >= 50)
                     {
-                        SetTile(x, y, (int)Blocks.Grass);
-                        SetWallTile(x, y, (int)Blocks.Grass);
-                    }
-                    else if (y > 50 && y < 55) {
-                        SetTile(x, y, (int)Blocks.Dirt);
-                        SetWallTile(x, y, (int)Blocks.Dirt);
-                    }
-                    else if (y >= 55)
-                    {
-                        SetTile(x, y, (int)Blocks.Stone);
-                        SetWallTile(x, y, (int)Blocks.Stone);
+                        if (noise.GetNoise(x * frequency, y * frequency) > 0.2)
+                        {
+                            SetTile(x, y, Tile.Block.Grass);
+                            SetWallTile(x, y, Tile.Block.Grass);
+                        }
+                        else
+                        {
+                            SetTile(x, y, Tile.Block.Air);
+                            SetWallTile(x, y, Tile.Block.Air);
+                        }
                     }
                     else
                     {
-                        SetTile(x, y, (int)Blocks.Air);
+                        SetTile(x, y, Tile.Block.Air);
+                        SetWallTile(x, y, Tile.Block.Air);
                     }
                 }
             }
         }
 
-        public int GetMask(int x, int y, int id, bool isWall)
+        public int GetMask(int x, int y, Tile.Block ID, bool isWall)
         {
             // Edge check
             bool Check(int dx, int dy)
@@ -153,8 +153,8 @@ namespace TileMap
                 if (nx < 0 || ny < 0 || nx >= size.X || ny >= size.Y) // Edge detection
                     return true;
 
-                if (isWall) return GetWallTile(nx, ny) != (int)Blocks.Air;
-                return GetTile(nx, ny) == id;
+                if (isWall) return GetWallTile(nx, ny).ID != Tile.Block.Air;
+                return GetTile(nx, ny).isSolid;
             }
 
             int mask = 0;
@@ -181,7 +181,7 @@ namespace TileMap
 
         public void calculateLighting(int x, int y)
         {
-            int decayFactor = 24;
+            double decayFactor = 32;
 
             int topLightTile = GetLightTile(x, y - 1);
             int bottomLightTile = GetLightTile(x, y + 1);
@@ -193,7 +193,7 @@ namespace TileMap
             if (leftLightTile > maxLight) maxLight = leftLightTile;
             if (rightLightTile > maxLight) maxLight = rightLightTile;
 
-            SetLightTile(x, y, (maxLight - decayFactor));
+            SetLightTile(x, y, (int)(maxLight - decayFactor));
         }
 
         public void Update(MouseState mouseState, float screenScaleFactor)
@@ -208,8 +208,8 @@ namespace TileMap
                 }
                 else if (mouseState.LeftButton == ButtonState.Pressed)
                 {
-                    if (placingWalls) SetWallTile(mousePosition.X, mousePosition.Y, (int)Blocks.Air);
-                    else SetTile(mousePosition.X, mousePosition.Y, (int)Blocks.Air);
+                    if (placingWalls) SetWallTile(mousePosition.X, mousePosition.Y, Tile.Block.Air);
+                    else SetTile(mousePosition.X, mousePosition.Y, Tile.Block.Air);
                 }
             }
 
@@ -219,9 +219,9 @@ namespace TileMap
                 {
                     blockKeyPressed = true;
                     activeBlock++;
-                    if (activeBlock > blocksLength - 1)
+                    if ((int)activeBlock > blocksLength - 1)
                     {
-                        activeBlock = 1;
+                        activeBlock = (Tile.Block)1;
                     }
                 }
             }
@@ -259,20 +259,20 @@ namespace TileMap
             {
                 for (int x = (int)cameraTilePosition.X; x < visibleRange.X; x++)
                 {
-                    int tileID = GetTile(x, y);
-                    int wallTileID = GetWallTile(x, y);
+                    Tile tile = GetTile(x, y);
+                    Tile wallTile = GetWallTile(x, y);
 
                     if (x >= size.X || y >= size.Y) // Edge detection
                     {
                         continue;
                     }
-                    if (tileID == (int)Blocks.Air && wallTileID == (int)Blocks.Air) {
+                    if (tile.ID == Tile.Block.Air && wallTile.ID == Tile.Block.Air) {
                         SetLightTile(x, y, 255);
                     }
                     else
                     {
                         // BITMASKING
-                        int mask = GetMask(x, y, tileID, false);
+                        int mask = GetMask(x, y, tile.ID, false);
                         int bitmask = 0;
 
                         if (maskToTile.TryGetValue(mask, out int tileIndex))
@@ -280,7 +280,7 @@ namespace TileMap
                         else
                             bitmask = 47;
 
-                        int wallMask = GetMask(x, y, wallTileID, true);
+                        int wallMask = GetMask(x, y, wallTile.ID, true);
                         int wallBitmask = 0;
 
                         if (maskToTile.TryGetValue(wallMask, out int wallTileIndex))
@@ -296,19 +296,20 @@ namespace TileMap
                         // LIGHTING
 
                         Vector2 tilePos = new Vector2((x * tileSize) - camera.position.X, (y * tileSize) - camera.position.Y);
-                        if (wallTileID != (int)Blocks.Air)
+                        if (wallTile.ID != Tile.Block.Air)
                         {
                             visibleTiles++;
-                            spriteBatch.Draw(tilesets[wallTileID - 1].texture, new Vector2((int)Math.Floor(tilePos.X), (int)Math.Floor(tilePos.Y)), tilesets[wallTileID - 1].GetTileRect(wallBitmask), wallTileColor);
+                            spriteBatch.Draw(tilesets[(int)wallTile.ID - 1].texture, new Vector2((float)Math.Floor(tilePos.X), (float)Math.Floor(tilePos.Y)), tilesets[(int)wallTile.ID - 1].GetTileRect(wallBitmask), wallTileColor);
                         }
-                        if (tileID != (int)Blocks.Air)
+                        if (tile.ID != Tile.Block.Air)
                         {
                             visibleTiles++;
-                            spriteBatch.Draw(tilesets[tileID - 1].texture, new Vector2((int)Math.Floor(tilePos.X), (int)Math.Floor(tilePos.Y)), tilesets[tileID - 1].GetTileRect(bitmask), tileColor);
+                            spriteBatch.Draw(tilesets[(int)tile.ID - 1].texture, new Vector2((float)Math.Floor(tilePos.X), (float)Math.Floor(tilePos.Y)), tilesets[(int)tile.ID - 1].GetTileRect(bitmask), tileColor);
                         }
                     }
                 }
             }
+            spriteBatch.Draw(cursorTexture, new Vector2((float)Math.Floor((mousePosition.X * GameSettings.Data.tileSize) - camera.position.X), (float)Math.Floor((mousePosition.Y * GameSettings.Data.tileSize) - camera.position.Y)), Color.White * 0.5f);
         }
     }
 }
