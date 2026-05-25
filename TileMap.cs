@@ -141,12 +141,12 @@ namespace TileMap
                 }
             }
 
-            // Lighting
+            // Lighting (this basically does nothing anyway)
             for (int y = 0; y < size.Y; y++)
             {
                 for (int x = 0; x < size.X; x++)
                 {
-                    calculateLighting(x, y);
+                    CalculateLighting(x, y);
                 }
             }
         }
@@ -188,7 +188,7 @@ namespace TileMap
             return mask;
         }
 
-        public void calculateLighting(int x, int y)
+        public void CalculateLighting(int x, int y)
         {
             if (GetTile(x, y).ID == Tile.Block.Air && GetWallTile(x, y).ID == Tile.Block.Air)
             {
@@ -298,7 +298,7 @@ namespace TileMap
                         // BITMASKING
 
                         // LIGHTING
-                        calculateLighting(x, y);
+                        CalculateLighting(x, y);
                         Color tileColor = new Color(GetLightTile(x, y), GetLightTile(x, y), GetLightTile(x, y), 255);
                         Color wallTileColor = new Color(GetLightTile(x, y) / 2, GetLightTile(x, y) / 2, GetLightTile(x, y) / 2, 255);
                         // LIGHTING
