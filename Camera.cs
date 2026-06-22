@@ -14,17 +14,17 @@ namespace TileMap
             this.position = position;
         }
 
-        public void Update(float deltaTime, Player player)
+        public void Update(float deltaTime, Entity entity)
         {   
             if (SmoothPosition)
             {
-                position.X = MathHelper.Lerp(position.X, (int)(player.position.X + player.Width / 2 - GameSettings.Data.viewportSize.X / 2), Speed * deltaTime);
-                position.Y = MathHelper.Lerp(position.Y, (int)(player.position.Y + player.Height / 2 - GameSettings.Data.viewportSize.Y / 2), Speed * deltaTime);
+                position.X = MathHelper.Lerp(position.X, (int)(entity.position.X + entity.width / 2 - GameSettings.Data.ViewportSize.X / 2), Speed * deltaTime);
+                position.Y = MathHelper.Lerp(position.Y, (int)(entity.position.Y + entity.height / 2 - GameSettings.Data.ViewportSize.Y / 2), Speed * deltaTime);
             }
             else
             {
-                position.X = (player.position.X + player.Width / 2) - GameSettings.Data.viewportSize.X / 2;
-                position.Y = (player.position.Y + player.Height / 2) - GameSettings.Data.viewportSize.Y / 2;
+                position.X = (entity.position.X + entity.width / 2) - GameSettings.Data.ViewportSize.X / 2;
+                position.Y = (entity.position.Y + entity.height / 2) - GameSettings.Data.ViewportSize.Y / 2;
             }
 
             // Boundaries
@@ -32,18 +32,18 @@ namespace TileMap
             {
                 position.X = 0;
             }
-            else if (position.X > (GameSettings.Data.tileMapSize.X * GameSettings.Data.tileSize) - GameSettings.Data.viewportSize.X)
+            else if (position.X > (GameSettings.Data.TileMapSize.X * GameSettings.Data.TileSize) - GameSettings.Data.ViewportSize.X)
             {
-                position.X = (GameSettings.Data.tileMapSize.X * GameSettings.Data.tileSize) - GameSettings.Data.viewportSize.X;
+                position.X = (GameSettings.Data.TileMapSize.X * GameSettings.Data.TileSize) - GameSettings.Data.ViewportSize.X;
             }
 
             if (position.Y < 0)
             {
                 position.Y = 0;
             }
-            else if (position.Y > (GameSettings.Data.tileMapSize.Y * GameSettings.Data.tileSize) - GameSettings.Data.viewportSize.Y)
+            else if (position.Y > (GameSettings.Data.TileMapSize.Y * GameSettings.Data.TileSize) - GameSettings.Data.ViewportSize.Y)
             {
-                position.Y = (GameSettings.Data.tileMapSize.Y * GameSettings.Data.tileSize) - GameSettings.Data.viewportSize.Y;
+                position.Y = (GameSettings.Data.TileMapSize.Y * GameSettings.Data.TileSize) - GameSettings.Data.ViewportSize.Y;
             }
         }
     }

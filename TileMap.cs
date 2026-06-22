@@ -45,7 +45,7 @@ namespace TileMap
         private readonly Tile[,] wallGrid;
         private readonly int[,] lightGrid;
 
-        private readonly int tileSize = GameSettings.Data.tileSize;
+        private readonly int tileSize = GameSettings.Data.TileSize;
         private readonly Camera camera;
         private readonly Texture2D cursorTexture;
 
@@ -138,15 +138,6 @@ namespace TileMap
                         SetTile(x, y, Tile.Block.Air);
                         SetWallTile(x, y, Tile.Block.Air);
                     }
-                }
-            }
-
-            // Lighting (this basically does nothing anyway)
-            for (int y = 0; y < size.Y; y++)
-            {
-                for (int x = 0; x < size.X; x++)
-                {
-                    CalculateLighting(x, y);
                 }
             }
         }
@@ -265,8 +256,8 @@ namespace TileMap
             // TODO: Move this camera stuff out of draw
             Vector2 cameraTilePosition = (camera.position / new Vector2(tileSize));
 
-            visibleRange.X = cameraTilePosition.X + (GameSettings.Data.viewportSize.X / tileSize);
-            visibleRange.Y = cameraTilePosition.Y + (GameSettings.Data.viewportSize.Y / tileSize);
+            visibleRange.X = cameraTilePosition.X + (GameSettings.Data.ViewportSize.X / tileSize);
+            visibleRange.Y = cameraTilePosition.Y + (GameSettings.Data.ViewportSize.Y / tileSize);
 
             // Only render visible tiles (Column major because apparently it's more memory efficient or something)
             visibleTiles = 0;
@@ -317,7 +308,7 @@ namespace TileMap
                     }
                 }
             }
-            spriteBatch.Draw(cursorTexture, new Vector2((float)Math.Floor((mousePosition.X * GameSettings.Data.tileSize) - camera.position.X), (float)Math.Floor((mousePosition.Y * GameSettings.Data.tileSize) - camera.position.Y)), Color.White * 0.5f);
+            spriteBatch.Draw(cursorTexture, new Vector2((float)Math.Floor((mousePosition.X * GameSettings.Data.TileSize) - camera.position.X), (float)Math.Floor((mousePosition.Y * GameSettings.Data.TileSize) - camera.position.Y)), Color.White * 0.5f);
         }
     }
 }
