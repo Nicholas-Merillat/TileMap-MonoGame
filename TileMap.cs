@@ -180,26 +180,44 @@ namespace TileMap
         }
 
         public void CalculateLighting(int x, int y)
-        {
+        {   
+            // Cancer
+            bool Check()
+            {   
+                bool leftCheck = GetTile(x - 1, y).ID == Tile.Block.Air && GetWallTile(x - 1, y).ID == Tile.Block.Air;
+                bool topCheck = GetTile(x, y - 1).ID == Tile.Block.Air && GetWallTile(x, y - 1).ID == Tile.Block.Air;
+                bool rightCheck = GetTile(x + 1, y).ID == Tile.Block.Air && GetWallTile(x + 1, y).ID == Tile.Block.Air;
+                bool bottomCheck = GetTile(x, y + 1).ID == Tile.Block.Air && GetWallTile(x, y + 1).ID == Tile.Block.Air;
+
+                return leftCheck || topCheck || rightCheck || bottomCheck;
+            }
+
+            double decayFactor = 1.35;
+
             if (GetTile(x, y).ID == Tile.Block.Air && GetWallTile(x, y).ID == Tile.Block.Air)
             {
                 SetLightTile(x, y, 255);
                 return;
             }
 
-            double decayFactor = 32;
+            if (!Check())
+            {   
+                int topLightTile = GetLightTile(x, y - 1);
+                int bottomLightTile = GetLightTile(x, y + 1);
+                int leftLightTile = GetLightTile(x - 1, y);
+                int rightLightTile = GetLightTile(x + 1, y);
 
-            int topLightTile = GetLightTile(x, y - 1);
-            int bottomLightTile = GetLightTile(x, y + 1);
-            int leftLightTile = GetLightTile(x - 1, y);
-            int rightLightTile = GetLightTile(x + 1, y);
+                int maxLight = topLightTile;
+                if (bottomLightTile > maxLight) maxLight = bottomLightTile;
+                if (leftLightTile > maxLight) maxLight = leftLightTile;
+                if (rightLightTile > maxLight) maxLight = rightLightTile;
 
-            int maxLight = topLightTile;
-            if (bottomLightTile > maxLight) maxLight = bottomLightTile;
-            if (leftLightTile > maxLight) maxLight = leftLightTile;
-            if (rightLightTile > maxLight) maxLight = rightLightTile;
-
-            SetLightTile(x, y, (int)(maxLight - decayFactor));
+                SetLightTile(x, y, (int)(maxLight / decayFactor));
+            }
+            else
+            {
+                SetLightTile(x, y, 255);
+            }
         }
 
         public void Update(MouseState mouseState, float screenScaleFactor)
