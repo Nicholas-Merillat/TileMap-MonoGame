@@ -76,13 +76,15 @@ namespace TileMap
             camera = new Camera(Vector2.Zero);
             tilemap = new TileMap(GameSettings.Data.TileMapSize, tileTextures, camera, cursorTexture);
             player = new Player(Vector2.Zero, playerTexture, tilemap);
-            entity = new Entity(new Vector2(100, 100), playerTexture, tilemap);
+            entity = new Entity(new Vector2(100, 100), cursorTexture, tilemap);
         }
 
         protected override void Update(GameTime gameTime)
         {
             deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds * PhysicsFPS;
             fps = 1 / (deltaTime / PhysicsFPS);
+
+            InputManager.Update();
 
             if (Keyboard.GetState().IsKeyDown(Keys.LeftAlt))
             {
@@ -118,7 +120,7 @@ namespace TileMap
             player.Update(deltaTime);
             entity.Update(deltaTime);
             camera.Update(deltaTime, player);
-            tilemap.Update(_currentMouseState, screenScaleFactor);
+            tilemap.Update(screenScaleFactor);
 
             base.Update(gameTime);
         }
@@ -147,7 +149,7 @@ namespace TileMap
             _spriteBatch.DrawString(_fontMedium, ((int)fps).ToString(), new Vector2(5, 0), Color.Black);
             _spriteBatch.DrawString(_fontSmall, ("playerPosition: " + (int)player.position.X) + " , " + ((int)player.position.Y), new Vector2(5, 40), Color.Black);
             _spriteBatch.DrawString(_fontSmall, ("cameraPosition: " + (int)camera.position.X) + " , " + ((int)camera.position.Y), new Vector2(5, 65), Color.Black);
-            _spriteBatch.DrawString(_fontSmall, ("visibleTiles: " + tilemap.visibleTiles), new Vector2(5, 90), Color.Black);
+            _spriteBatch.DrawString(_fontSmall, ("renderedTiles: " + tilemap.renderedTiles), new Vector2(5, 90), Color.Black);
             _spriteBatch.DrawString(_fontSmall, ("activeBlock: " + tilemap.activeBlock).ToString(), new Vector2(5, 115), Color.Black);
             _spriteBatch.DrawString(_fontSmall, ("placingWalls: " + tilemap.placingWalls), new Vector2(5, 140), Color.Black);
 

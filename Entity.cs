@@ -15,7 +15,7 @@ namespace TileMap
         public int width = 8;
         public int height = 8;
 
-        public int direction;
+        public Vector2 direction;
         public bool wantToJump;
 
         public Texture2D texture;
@@ -23,7 +23,7 @@ namespace TileMap
         
         public bool onGround;
         public Vector2 position;
-        // private Vector2 previousPosition;
+        private Vector2 previousPosition;
         public Vector2 velocity;
 
         public Entity(Vector2 position, Texture2D texture, TileMap tilemap)
@@ -31,13 +31,14 @@ namespace TileMap
             this.position = position;
             this.texture = texture;
             this.tilemap = tilemap;
+            this.direction = Vector2.Zero;
         }
 
         public virtual void Update(float deltaTime)
         {
-            // previousPosition = position;
+            previousPosition = position;
 
-            velocity.X = MathHelper.Lerp(velocity.X, MaxSpeed * direction, Speed * deltaTime);
+            velocity.X = MathHelper.Lerp(velocity.X, MaxSpeed * direction.X, Speed * deltaTime);
             velocity.Y += Gravity * deltaTime;
             if (velocity.Y > MaxFallSpeed) velocity.Y = MaxFallSpeed;
 
@@ -135,10 +136,10 @@ namespace TileMap
             position.X += velocity.X * deltaTime;
             position.Y += velocity.Y * deltaTime;
 
-            // if (position.Y - previousPosition.Y > GameSettings.Data.TileSize)
-            // {
-            //     position.Y = previousPosition.Y;
-            // }
+            if (position.Y - previousPosition.Y > GameSettings.Data.TileSize)
+            {
+                position.Y = previousPosition.Y;
+            }
         }
 
         public virtual void Draw(SpriteBatch spriteBatch, Vector2 cameraPosition)

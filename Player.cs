@@ -6,9 +6,7 @@ namespace TileMap
 {
     internal class Player : Entity
     {
-        private const Keys LeftKey = Keys.A;
-        private const Keys RightKey = Keys.D;
-        private const Keys JumpKey = Keys.Space;
+        private bool debug = false;
 
         public Player(Vector2 position, Texture2D texture, TileMap tilemap) : base(position, texture, tilemap)
         {   
@@ -18,13 +16,36 @@ namespace TileMap
 
         public override void Update(float deltaTime)
         {   
-            base.wantToJump = Keyboard.GetState().IsKeyDown(JumpKey);
+            // INPUT
+            base.wantToJump = InputManager.IsKeyHeld(InputManager.JumpKey);
             
-            if (Keyboard.GetState().IsKeyDown(LeftKey)) base.direction = -1;
-            else if (Keyboard.GetState().IsKeyDown(RightKey)) base.direction = 1;
-            else base.direction = 0;
+            if (InputManager.IsKeyHeld(InputManager.LeftKey)) base.direction.X = -1;
+            else if (InputManager.IsKeyHeld(InputManager.RightKey)) base.direction.X = 1;
+            else base.direction.X = 0;
 
-            base.Update(deltaTime);
+            if (InputManager.IsKeyPressed(InputManager.PlayerDebugKey))
+            {
+                debug = !debug;
+            }
+            // INPUT
+
+            // LOOP
+            if (!debug)
+            {
+                base.Update(deltaTime);
+            }
+            else
+            {   
+                if (InputManager.IsKeyHeld(InputManager.UpKey)) base.direction.Y = -1;
+                else if (InputManager.IsKeyHeld(InputManager.DownKey)) base.direction.Y = 1;
+                else base.direction.Y = 0;
+
+                base.velocity = Vector2.Zero;
+
+                base.position.X += (base.MaxSpeed * 3) * base.direction.X * deltaTime;
+                base.position.Y += (base.MaxSpeed * 3) * base.direction.Y * deltaTime;
+            }
+            // LOOP
         }
 
         public override void Draw(SpriteBatch spriteBatch, Vector2 cameraPosition)

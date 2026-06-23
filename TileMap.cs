@@ -9,11 +9,10 @@ namespace TileMap
 {
     internal class TileMap
     {
+        public bool lightingEnabled = true;
         public bool placingWalls = false;
-        public Tile.Block activeBlock = Tile.Block.Grass;
 
-        private bool layerKeyPressed = false;
-        private bool blockKeyPressed = false;
+        public Tile.Block activeBlock = Tile.Block.Grass;
         private readonly int blocksLength = Enum.GetNames(typeof(Tile.Block)).Length;
 
         private const int NW = 1;
@@ -54,7 +53,8 @@ namespace TileMap
         public TileSet[] tilesets;
         public Vector2 size;
         public Vector2 visibleRange;
-        public int visibleTiles;
+        public int renderedTiles;
+        public int safeAreaExtension = 12;
 
         public TileMap(Vector2 size, Texture2D[] tileTextures, Camera camera, Texture2D cursorTexture)
         {
@@ -192,7 +192,7 @@ namespace TileMap
                 return leftCheck || topCheck || rightCheck || bottomCheck;
             }
 
-            double decayFactor = 1.35;
+            double decayFactor = 1.5;
 
             if (GetTile(x, y).ID == Tile.Block.Air && GetWallTile(x, y).ID == Tile.Block.Air)
             {
@@ -220,65 +220,48 @@ namespace TileMap
             }
         }
 
-        public void Update(MouseState mouseState, float screenScaleFactor)
+        public void Update(float screenScaleFactor)
         {
-            mousePosition = ScreenToTile(mouseState.X / screenScaleFactor, mouseState.Y / screenScaleFactor);
+            mousePosition = ScreenToTile(InputManager.GetMousePosition().X / screenScaleFactor, InputManager.GetMousePosition().Y / screenScaleFactor);
             if (mousePosition.X >= 0 && mousePosition.Y >= 0 && mousePosition.X < size.X && mousePosition.Y < size.Y)
             {
-                if (mouseState.RightButton == ButtonState.Pressed)
+                if (InputManager.IsMouseButtonHeld(InputManager.MouseButton.Right))
                 {   
                     if (placingWalls) SetWallTile(mousePosition.X, mousePosition.Y, activeBlock);
                     else SetTile(mousePosition.X, mousePosition.Y, activeBlock);
                 }
-                else if (mouseState.LeftButton == ButtonState.Pressed)
+                else if (InputManager.IsMouseButtonHeld(InputManager.MouseButton.Left))
                 {
                     if (placingWalls) SetWallTile(mousePosition.X, mousePosition.Y, Tile.Block.Air);
                     else SetTile(mousePosition.X, mousePosition.Y, Tile.Block.Air);
                 }
             }
 
-            if (Keyboard.GetState().IsKeyDown(Keys.Tab))
+            if (InputManager.IsKeyPressed(Keys.Tab))
             {
-                if (!blockKeyPressed)
+                activeBlock++;
+                if ((int)activeBlock > blocksLength - 1)
                 {
-                    blockKeyPressed = true;
-                    activeBlock++;
-                    if ((int)activeBlock > blocksLength - 1)
-                    {
-                        activeBlock = (Tile.Block)1;
-                    }
+                    activeBlock = (Tile.Block)1;
                 }
-            }
-            else
-            {
-                blockKeyPressed = false;
             }
 
-            if (mouseState.MiddleButton == ButtonState.Pressed)
+            if (InputManager.IsMouseButtonPressed(InputManager.MouseButton.Middle))
             {
-                if (!layerKeyPressed)
-                {
-                    layerKeyPressed = true;
-                    if (placingWalls) placingWalls = false;
-                    else placingWalls = true;
-                }
-            }
-            else
-            {
-                layerKeyPressed = false;
+                placingWalls = !placingWalls;
             }
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {   
             // TODO: Move this camera stuff out of draw
-            Vector2 cameraTilePosition = (camera.position / new Vector2(tileSize));
+            Vector2 cameraTilePosition = new Vector2((camera.position.X / tileSize) - safeAreaExtension, (camera.position.Y / tileSize) - safeAreaExtension);
 
-            visibleRange.X = cameraTilePosition.X + (GameSettings.Data.ViewportSize.X / tileSize);
-            visibleRange.Y = cameraTilePosition.Y + (GameSettings.Data.ViewportSize.Y / tileSize);
+            visibleRange.X = cameraTilePosition.X + (GameSettings.Data.ViewportSize.X / tileSize) + (safeAreaExtension * 2);
+            visibleRange.Y = cameraTilePosition.Y + (GameSettings.Data.ViewportSize.Y / tileSize) + (safeAreaExtension * 2);
 
             // Only render visible tiles (Column major because apparently it's more memory efficient or something)
-            visibleTiles = 0;
+            renderedTiles = 0;
             for (int y = (int)cameraTilePosition.Y; y < visibleRange.Y; y++)
             {
                 for (int x = (int)cameraTilePosition.X; x < visibleRange.X; x++)
@@ -307,7 +290,14 @@ namespace TileMap
                         // BITMASKING
 
                         // LIGHTING
-                        CalculateLighting(x, y);
+                        if (lightingEnabled)
+                        {
+                            CalculateLighting(x, y);
+                        }
+                        else
+                        {
+                            SetLightTile(x, y, 255);
+                        }
                         Color tileColor = new Color(GetLightTile(x, y), GetLightTile(x, y), GetLightTile(x, y), 255);
                         Color wallTileColor = new Color(GetLightTile(x, y) / 2, GetLightTile(x, y) / 2, GetLightTile(x, y) / 2, 255);
                         // LIGHTING
@@ -315,12 +305,12 @@ namespace TileMap
                         Vector2 tilePos = new Vector2((x * tileSize) - camera.position.X, (y * tileSize) - camera.position.Y);
                         if (wallTile.ID != Tile.Block.Air)
                         {
-                            visibleTiles++;
+                            renderedTiles++;
                             spriteBatch.Draw(tilesets[(int)wallTile.ID - 1].texture, new Vector2((float)Math.Floor(tilePos.X), (float)Math.Floor(tilePos.Y)), tilesets[(int)wallTile.ID - 1].GetTileRect(wallBitmask), wallTileColor);
                         }
                         if (tile.ID != Tile.Block.Air)
                         {
-                            visibleTiles++;
+                            renderedTiles++;
                             spriteBatch.Draw(tilesets[(int)tile.ID - 1].texture, new Vector2((float)Math.Floor(tilePos.X), (float)Math.Floor(tilePos.Y)), tilesets[(int)tile.ID - 1].GetTileRect(bitmask), tileColor);
                         }
                     }
