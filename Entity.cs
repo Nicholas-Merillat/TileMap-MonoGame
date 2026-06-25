@@ -23,7 +23,7 @@ namespace TileMap
         
         public bool onGround;
         public Vector2 position;
-        private Vector2 previousPosition;
+        // private Vector2 previousPosition;
         public Vector2 velocity;
 
         public Entity(Vector2 position, Texture2D texture, TileMap tilemap)
@@ -36,11 +36,26 @@ namespace TileMap
 
         public virtual void Update(float deltaTime)
         {
-            previousPosition = position;
+            // previousPosition = position;
 
             velocity.X = MathHelper.Lerp(velocity.X, MaxSpeed * direction.X, Speed * deltaTime);
             velocity.Y += Gravity * deltaTime;
             if (velocity.Y > MaxFallSpeed) velocity.Y = MaxFallSpeed;
+
+            if (wantToJump && onGround)
+            {
+                onGround = false;
+                velocity.Y = -JumpForce;
+            }
+            else if (!wantToJump && velocity.Y < 0) velocity.Y *= 0.75f;
+
+            position.X += velocity.X * deltaTime;
+            position.Y += velocity.Y * deltaTime;
+
+            // if (position.Y - previousPosition.Y > GameSettings.Data.TileSize)
+            // {
+            //     position.Y = previousPosition.Y;
+            // }
 
             // Prepare for the horde of if statements
 
@@ -49,21 +64,21 @@ namespace TileMap
             Vector2 belowTileLeft = tilemap.WorldToTile(position.X + 1, position.Y + height);
             Vector2 belowTileRight = tilemap.WorldToTile(position.X + width - 1, position.Y + height);
             if (tilemap.GetTile(belowTileLeft.X, belowTileLeft.Y).isSolid && velocity.Y >= 0)
-            {
-                position.Y = belowTileLeft.Y * GameSettings.Data.TileSize - height;
+            {   
                 velocity.Y = 0;
+                position.Y = belowTileLeft.Y * GameSettings.Data.TileSize - height;
                 onGround = true;
             }
             else if (tilemap.GetTile(belowTileRight.X, belowTileRight.Y).isSolid && velocity.Y >= 0)
-            {
-                position.Y = belowTileRight.Y * GameSettings.Data.TileSize - height;
+            {   
                 velocity.Y = 0;
+                position.Y = belowTileRight.Y * GameSettings.Data.TileSize - height;
                 onGround = true;
             }
 
             // Ceiling collision
             Vector2 aboveTileLeft = tilemap.WorldToTile(position.X + 1, position.Y);
-            Vector2 aboveTileRight = tilemap.WorldToTile(position.X + width - 1, position.Y);
+            Vector2 aboveTileRight = tilemap.WorldToTile(position.X + width - 2, position.Y);
             if (tilemap.GetTile(aboveTileLeft.X, aboveTileLeft.Y).isSolid && velocity.Y <= 0)
             {
                 position.Y = (aboveTileLeft.Y + 1) * GameSettings.Data.TileSize;
@@ -124,21 +139,6 @@ namespace TileMap
                 position.Y = tilemap.size.Y * GameSettings.Data.TileSize - height;
                 velocity.Y = 0;
                 onGround = true;
-            }
-
-            if (wantToJump && onGround)
-            {
-                onGround = false;
-                velocity.Y = -JumpForce;
-            }
-            else if (!wantToJump && velocity.Y < 0) velocity.Y *= 0.75f;
-
-            position.X += velocity.X * deltaTime;
-            position.Y += velocity.Y * deltaTime;
-
-            if (position.Y - previousPosition.Y > GameSettings.Data.TileSize)
-            {
-                position.Y = previousPosition.Y;
             }
         }
 

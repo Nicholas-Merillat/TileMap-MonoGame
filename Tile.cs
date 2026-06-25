@@ -17,6 +17,7 @@ namespace TileMap
             CobbleStone,
             Clay,
             Wood,
+            TileSet,
         }
 
         private static readonly Dictionary<Block, string> tileNames = new Dictionary<Block, string>
@@ -28,6 +29,7 @@ namespace TileMap
             {Block.CobbleStone, "Cobble Stone"},
             {Block.Clay, "Clay"},
             {Block.Wood, "Wood"},
+            {Block.TileSet, "TileSet"},
         };
 
         private static readonly Dictionary<Block, bool> solidTiles = new Dictionary<Block, bool>
@@ -39,6 +41,7 @@ namespace TileMap
             {Block.CobbleStone, true},
             {Block.Clay, true},
             {Block.Wood, true},
+            {Block.TileSet, true},
         };
 
         public Block ID;

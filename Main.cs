@@ -2,13 +2,13 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
+using System;
 
 namespace TileMap
 {
     public class Main : Game
-    {
-        private const int PhysicsFPS = 60;
-
+    {   
+        private Vector2 screenSize;
         private float screenScaleFactor;
         private bool fullscreenKeyPressed;
 
@@ -29,10 +29,7 @@ namespace TileMap
         private Texture2D playerTexture;
         private Texture2D cursorTexture;
 
-        private TileMap tilemap;
-        private Camera camera;
-        private Player player;
-        private Entity entity;
+        private Level level;
 
         public Main()
         {
@@ -40,14 +37,25 @@ namespace TileMap
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
 
-            // Uncaps the fps
+            // FPS cap
             _graphics.SynchronizeWithVerticalRetrace = false;
-            IsFixedTimeStep = false;
+
+            if (GameSettings.Data.MaxFps <= 0)
+            {
+                IsFixedTimeStep = false;
+            }
+            else
+            {
+                IsFixedTimeStep = true;
+                TargetElapsedTime = TimeSpan.FromSeconds(1d / (double)GameSettings.Data.MaxFps);
+            }
         }
 
         protected override void Initialize()
-        {
-            screenScaleFactor = GameSettings.Data.ScreenSize.X / GameSettings.Data.WindowSize.X;
+        {   
+            screenSize = new Vector2(GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width, GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height);
+            screenScaleFactor = screenSize.X / GameSettings.Data.WindowSize.X;
+
             _graphics.PreferredBackBufferWidth = (int)GameSettings.Data.WindowSize.X;
             _graphics.PreferredBackBufferHeight = (int)GameSettings.Data.WindowSize.Y;
             _graphics.IsFullScreen = false;
@@ -64,7 +72,7 @@ namespace TileMap
 
             viewport = new RenderTarget2D(GraphicsDevice, (int)GameSettings.Data.ViewportSize.X, (int)GameSettings.Data.ViewportSize.Y);
 
-            tileTextures = new Texture2D[6];
+            tileTextures = new Texture2D[Enum.GetNames(typeof(Tile.Block)).Length - 1];
             for (int i=0; i < tileTextures.Length; i++)
             {
                 tileTextures[i] = Content.Load<Texture2D>($"Images/{(Tile.Block)i+1}");
@@ -73,16 +81,13 @@ namespace TileMap
             playerTexture = Content.Load<Texture2D>("Images/UFOMater");
             cursorTexture = Content.Load<Texture2D>("Images/White");
 
-            camera = new Camera(Vector2.Zero);
-            tilemap = new TileMap(GameSettings.Data.TileMapSize, tileTextures, camera, cursorTexture);
-            player = new Player(Vector2.Zero, playerTexture, tilemap);
-            entity = new Entity(new Vector2(100, 100), cursorTexture, tilemap);
+            level = new Level("level", tileTextures, playerTexture, cursorTexture);
         }
 
         protected override void Update(GameTime gameTime)
         {
-            deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds * PhysicsFPS;
-            fps = 1 / (deltaTime / PhysicsFPS);
+            deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds * GameSettings.Data.PhysicsFps;
+            fps = 1 / (deltaTime / GameSettings.Data.PhysicsFps);
 
             InputManager.Update();
 
@@ -98,8 +103,8 @@ namespace TileMap
                     }
                     else
                     {
-                        _graphics.PreferredBackBufferWidth = (int)GameSettings.Data.ScreenSize.X;
-                        _graphics.PreferredBackBufferHeight = (int)GameSettings.Data.ScreenSize.Y;
+                        _graphics.PreferredBackBufferWidth = (int)screenSize.X;
+                        _graphics.PreferredBackBufferHeight = (int)screenSize.Y;
                     }
                     screenScaleFactor = _graphics.PreferredBackBufferWidth / GameSettings.Data.ViewportSize.X;
                     _graphics.ToggleFullScreen();
@@ -117,10 +122,7 @@ namespace TileMap
             _previousMouseState = _currentMouseState;
             _currentMouseState = Mouse.GetState();
 
-            player.Update(deltaTime);
-            entity.Update(deltaTime);
-            camera.Update(deltaTime, player);
-            tilemap.Update(screenScaleFactor);
+            level.Update(deltaTime, screenScaleFactor);
 
             base.Update(gameTime);
         }
@@ -133,9 +135,7 @@ namespace TileMap
             // Game stuff
             _spriteBatch.Begin(blendState: BlendState.AlphaBlend);
 
-            tilemap.Draw(_spriteBatch);
-            player.Draw(_spriteBatch, camera.position);
-            entity.Draw(_spriteBatch, camera.position);
+            level.Draw(_spriteBatch);
 
             _spriteBatch.End();
 
@@ -147,11 +147,11 @@ namespace TileMap
 
             _spriteBatch.Draw(viewport, new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height), Color.White);
             _spriteBatch.DrawString(_fontMedium, ((int)fps).ToString(), new Vector2(5, 0), Color.Black);
-            _spriteBatch.DrawString(_fontSmall, ("playerPosition: " + (int)player.position.X) + " , " + ((int)player.position.Y), new Vector2(5, 40), Color.Black);
-            _spriteBatch.DrawString(_fontSmall, ("cameraPosition: " + (int)camera.position.X) + " , " + ((int)camera.position.Y), new Vector2(5, 65), Color.Black);
-            _spriteBatch.DrawString(_fontSmall, ("renderedTiles: " + tilemap.renderedTiles), new Vector2(5, 90), Color.Black);
-            _spriteBatch.DrawString(_fontSmall, ("activeBlock: " + tilemap.activeBlock).ToString(), new Vector2(5, 115), Color.Black);
-            _spriteBatch.DrawString(_fontSmall, ("placingWalls: " + tilemap.placingWalls), new Vector2(5, 140), Color.Black);
+            _spriteBatch.DrawString(_fontSmall, ("playerPosition: " + (int)level.player.position.X) + " , " + ((int)level.player.position.Y), new Vector2(5, 40), Color.Black);
+            _spriteBatch.DrawString(_fontSmall, ("cameraPosition: " + (int)level.camera.position.X) + " , " + ((int)level.camera.position.Y), new Vector2(5, 65), Color.Black);
+            _spriteBatch.DrawString(_fontSmall, ("renderedTiles: " + level.tilemap.renderedTiles), new Vector2(5, 90), Color.Black);
+            _spriteBatch.DrawString(_fontSmall, ("activeBlock: " + level.tilemap.activeBlock).ToString(), new Vector2(5, 115), Color.Black);
+            _spriteBatch.DrawString(_fontSmall, ("placingWalls: " + level.tilemap.placingWalls), new Vector2(5, 140), Color.Black);
 
             _spriteBatch.End();
 
