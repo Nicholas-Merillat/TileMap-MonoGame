@@ -3,13 +3,13 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace TileMap
 {
     internal class TileMap
     {
         public bool lightingEnabled = true;
+        public bool flatWorld = true;
         public bool placingWalls = false;
 
         public Tile.Block activeBlock = Tile.Block.Grass;
@@ -48,13 +48,13 @@ namespace TileMap
         private readonly Camera camera;
         private readonly Texture2D cursorTexture;
 
-        private Vector2 mousePosition;
+        private Vector2 mouseTilePosition;
 
         public TileSet[] tilesets;
         public Vector2 size;
         public Vector2 visibleRange;
         public int renderedTiles;
-        public int safeAreaExtension = 12;
+        public int safeAreaExtension = 0; // Not needed anymore because the only reason I added it was to fix lighting being generated as soon as it entered the screen
 
         public TileMap(Vector2 size, Texture2D[] tileTextures, Camera camera, Texture2D cursorTexture)
         {
@@ -65,7 +65,7 @@ namespace TileMap
             tilesets = new TileSet[tileTextures.Length];
             for (int i = 0; i < tileTextures.Length; i++)
             {
-                tilesets[i] = new TileSet(tileTextures[i], 8);
+                tilesets[i] = new TileSet(tileTextures[i], GameSettings.Data.TileTextureSize);
             }
 
             // Create grid and lightGrid, then generate
@@ -75,6 +75,7 @@ namespace TileMap
             GenerateWorld();
         }
 
+        // Safer ways to access the grid than just addressing it directly
         public void SetTile(float x, float y, Tile.Block ID)
         {
             grid[(int)x, (int)y] = new Tile(ID);
@@ -99,6 +100,8 @@ namespace TileMap
         {
             return lightGrid[(int)Math.Clamp(x, 0, size.X - 1), (int)Math.Clamp(y, 0, size.Y - 1)];
         }
+
+        // Tile math
         public Vector2 ScreenToTile(float x, float y)
         {
             return new Vector2((int)Math.Floor((x / tileSize) + camera.position.X / tileSize), (int)Math.Floor((y / tileSize) + camera.position.Y / tileSize));
@@ -121,8 +124,8 @@ namespace TileMap
                 for (int x = 0; x < size.X; x++)
                 {   
                     if (y >= 50)
-                    {
-                        if (noise.GetNoise(x * frequency, y * frequency) < 0.2)
+                    {   
+                        if (noise.GetNoise(x * frequency, y * frequency) < 0.2 || flatWorld)
                         {
                             SetTile(x, y, Tile.Block.Grass);
                             SetWallTile(x, y, Tile.Block.Grass);
@@ -137,6 +140,25 @@ namespace TileMap
                     {
                         SetTile(x, y, Tile.Block.Air);
                         SetWallTile(x, y, Tile.Block.Air);
+                    }
+                }
+            }
+
+            // Pre generate lighting
+            if (lightingEnabled)
+            {
+                for (int y = 0; y < size.Y; y++)
+                {
+                    for (int x = 0; x < size.X; x++)
+                    {
+                        CalculateLighting(x,y);
+                    }
+                }
+                for (int y = (int)size.Y; y > 0; y--)
+                {
+                    for (int x = (int)size.X; x > 0; x--)
+                    {
+                        CalculateLighting(x,y);
                     }
                 }
             }
@@ -192,7 +214,7 @@ namespace TileMap
                 return leftCheck || topCheck || rightCheck || bottomCheck;
             }
 
-            double decayFactor = 1.5;
+            double decayFactor = 1.4;
 
             if (GetTile(x, y).ID == Tile.Block.Air && GetWallTile(x, y).ID == Tile.Block.Air)
             {
@@ -220,20 +242,21 @@ namespace TileMap
             }
         }
 
-        public void Update(float screenScaleFactor)
+        public void Update()
         {
-            mousePosition = ScreenToTile(InputManager.GetMousePosition().X / screenScaleFactor, InputManager.GetMousePosition().Y / screenScaleFactor);
-            if (mousePosition.X >= 0 && mousePosition.Y >= 0 && mousePosition.X < size.X && mousePosition.Y < size.Y)
+            mouseTilePosition = ScreenToTile(InputManager.GetMousePosition().X, InputManager.GetMousePosition().Y);
+
+            if (InputManager.GetMousePosition().X > 0 && InputManager.GetMousePosition().Y > 0 && InputManager.GetMousePosition().X < GameSettings.Data.ViewportSize.X && InputManager.GetMousePosition().Y < GameSettings.Data.ViewportSize.Y)
             {
                 if (InputManager.IsMouseButtonHeld(InputManager.MouseButton.Right))
                 {   
-                    if (placingWalls) SetWallTile(mousePosition.X, mousePosition.Y, activeBlock);
-                    else SetTile(mousePosition.X, mousePosition.Y, activeBlock);
+                    if (placingWalls) SetWallTile(mouseTilePosition.X, mouseTilePosition.Y, activeBlock);
+                    else SetTile(mouseTilePosition.X, mouseTilePosition.Y, activeBlock);
                 }
                 else if (InputManager.IsMouseButtonHeld(InputManager.MouseButton.Left))
                 {
-                    if (placingWalls) SetWallTile(mousePosition.X, mousePosition.Y, Tile.Block.Air);
-                    else SetTile(mousePosition.X, mousePosition.Y, Tile.Block.Air);
+                    if (placingWalls) SetWallTile(mouseTilePosition.X, mouseTilePosition.Y, Tile.Block.Air);
+                    else SetTile(mouseTilePosition.X, mouseTilePosition.Y, Tile.Block.Air);
                 }
             }
 
@@ -246,7 +269,7 @@ namespace TileMap
                 }
             }
 
-            if (InputManager.IsMouseButtonPressed(InputManager.MouseButton.Middle))
+            if (InputManager.IsKeyPressed(Keys.LeftControl))
             {
                 placingWalls = !placingWalls;
             }
@@ -270,25 +293,7 @@ namespace TileMap
                     Tile wallTile = GetWallTile(x, y);
 
                     if (x < size.X || y < size.Y)
-                    {
-                        // BITMASKING
-                        int mask = GetMask(x, y, tile.ID, false);
-                        int bitmask = 0;
-
-                        if (maskToTile.TryGetValue(mask, out int tileIndex))
-                            bitmask = tileIndex;
-                        else
-                            bitmask = 47;
-
-                        int wallMask = GetMask(x, y, wallTile.ID, true);
-                        int wallBitmask = 0;
-
-                        if (maskToTile.TryGetValue(wallMask, out int wallTileIndex))
-                            wallBitmask = wallTileIndex;
-                        else
-                            wallBitmask = 47;
-                        // BITMASKING
-
+                    {   
                         // LIGHTING
                         if (lightingEnabled)
                         {
@@ -302,21 +307,74 @@ namespace TileMap
                         Color wallTileColor = new Color(GetLightTile(x, y) / 2, GetLightTile(x, y) / 2, GetLightTile(x, y) / 2, 255);
                         // LIGHTING
 
+                        // BITMASKING
+                        int bitmask = 0;
+                        int wallBitmask = 0;
+                        
+                        if (tileColor != Color.Black)
+                        {   
+                            int mask = GetMask(x, y, tile.ID, false);
+                            if (maskToTile.TryGetValue(mask, out int tileIndex))
+                                bitmask = tileIndex;
+                            else
+                                bitmask = 47;
+                        }
+                        if (wallTileColor != Color.Black)
+                        {
+                            int wallMask = GetMask(x, y, wallTile.ID, true);
+                            if (maskToTile.TryGetValue(wallMask, out int wallTileIndex))
+                                wallBitmask = wallTileIndex;
+                            else
+                                wallBitmask = 47;
+                        }
+                        // BITMASKING
+
                         Vector2 tilePos = new Vector2((x * tileSize) - camera.position.X, (y * tileSize) - camera.position.Y);
                         if (wallTile.ID != Tile.Block.Air)
                         {
                             renderedTiles++;
-                            spriteBatch.Draw(tilesets[(int)wallTile.ID - 1].texture, new Vector2((float)Math.Floor(tilePos.X), (float)Math.Floor(tilePos.Y)), tilesets[(int)wallTile.ID - 1].GetTileRect(wallBitmask), wallTileColor);
+
+                            // This fucking sucks but I have to do it for scaled tile textures
+                            spriteBatch.Draw
+                            (
+                                tilesets[(int)wallTile.ID - 1].texture, // Texture
+                                new Vector2((float)Math.Floor(tilePos.X), (float)Math.Floor(tilePos.Y)), // Position
+                                tilesets[(int)wallTile.ID - 1].GetTileRect(wallBitmask), // Texture Rect
+                                wallTileColor, // Color
+                                0, // Rotation
+                                Vector2.Zero, // Origin
+                                (float)GameSettings.Data.TileSize / (float)GameSettings.Data.TileTextureSize, // Scale
+                                SpriteEffects.None, // Effects
+                                0 // Layer Depth
+                            );
                         }
                         if (tile.ID != Tile.Block.Air)
                         {
                             renderedTiles++;
-                            spriteBatch.Draw(tilesets[(int)tile.ID - 1].texture, new Vector2((float)Math.Floor(tilePos.X), (float)Math.Floor(tilePos.Y)), tilesets[(int)tile.ID - 1].GetTileRect(bitmask), tileColor);
+
+                            // This fucking sucks but I have to do it for scaled tile textures
+                            spriteBatch.Draw
+                            (
+                                tilesets[(int)tile.ID - 1].texture, // Texture
+                                new Vector2((float)Math.Floor(tilePos.X), (float)Math.Floor(tilePos.Y)), // Position
+                                tilesets[(int)tile.ID - 1].GetTileRect(bitmask), // Texture Rect
+                                tileColor, // Color
+                                0, // Rotation
+                                Vector2.Zero, // Origin
+                                (float)GameSettings.Data.TileSize / (float)GameSettings.Data.TileTextureSize, // Scale
+                                SpriteEffects.None, // Effects
+                                0 // Layer Depth
+                            );
                         }
                     }
                 }
             }
-            spriteBatch.Draw(cursorTexture, new Vector2((float)Math.Floor((mousePosition.X * GameSettings.Data.TileSize) - camera.position.X), (float)Math.Floor((mousePosition.Y * GameSettings.Data.TileSize) - camera.position.Y)), Color.White * 0.5f);
+            spriteBatch.Draw
+            (
+                cursorTexture, 
+                new Rectangle((int)Math.Floor((mouseTilePosition.X * GameSettings.Data.TileSize) - camera.position.X), (int)Math.Floor((mouseTilePosition.Y * GameSettings.Data.TileSize) - camera.position.Y), GameSettings.Data.TileSize, GameSettings.Data.TileSize), 
+                Color.White * 0.5f
+            );
         }
     }
 }

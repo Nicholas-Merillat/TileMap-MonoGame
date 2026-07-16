@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace TileMap
 {
-    internal class InputManager
+    internal static class InputManager
     {   
         private static KeyboardState _keyboardState;
         private static KeyboardState _previousKeyboardState;
@@ -17,6 +17,8 @@ namespace TileMap
         public static readonly Keys DownKey = Keys.S;
         public static readonly Keys JumpKey = Keys.Space;
         public static readonly Keys PlayerDebugKey = Keys.LeftShift;
+
+        public static float screenScaleFactor;
 
         public enum MouseButton
         {
@@ -43,7 +45,7 @@ namespace TileMap
         // MOUSE
         public static Vector2 GetMousePosition()
         {
-            return new Vector2(_mouseState.X, _mouseState.Y);
+            return new Vector2(_mouseState.X / screenScaleFactor, _mouseState.Y / screenScaleFactor);
         }
         public static bool IsMouseButtonPressed(MouseButton button)
         {

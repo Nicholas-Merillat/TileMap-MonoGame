@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System.Collections.Generic;
 using System;
 
 namespace TileMap
@@ -10,13 +9,9 @@ namespace TileMap
     {   
         private Vector2 screenSize;
         private float screenScaleFactor;
-        private bool fullscreenKeyPressed;
 
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
-        
-        private MouseState _currentMouseState;
-        private MouseState _previousMouseState;
 
         private SpriteFont _fontSmall;
         private SpriteFont _fontMedium;
@@ -26,8 +21,7 @@ namespace TileMap
         private float fps;
 
         private Texture2D[] tileTextures;
-        private Texture2D playerTexture;
-        private Texture2D cursorTexture;
+        private Texture2D white;
 
         private Level level;
 
@@ -52,14 +46,8 @@ namespace TileMap
         }
 
         protected override void Initialize()
-        {   
-            screenSize = new Vector2(GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width, GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height);
-            screenScaleFactor = screenSize.X / GameSettings.Data.WindowSize.X;
-
-            _graphics.PreferredBackBufferWidth = (int)GameSettings.Data.WindowSize.X;
-            _graphics.PreferredBackBufferHeight = (int)GameSettings.Data.WindowSize.Y;
-            _graphics.IsFullScreen = false;
-            _graphics.ApplyChanges();
+        {
+            UpdateScreen(false);
 
             base.Initialize();
         }
@@ -70,6 +58,9 @@ namespace TileMap
             _fontSmall = Content.Load<SpriteFont>("Fonts/FontSmall");
             _fontMedium = Content.Load<SpriteFont>("Fonts/FontMedium");
 
+            white = new Texture2D(GraphicsDevice, 1, 1);
+            white.SetData(new Color[] {Color.White});
+
             viewport = new RenderTarget2D(GraphicsDevice, (int)GameSettings.Data.ViewportSize.X, (int)GameSettings.Data.ViewportSize.Y);
 
             tileTextures = new Texture2D[Enum.GetNames(typeof(Tile.Block)).Length - 1];
@@ -78,10 +69,7 @@ namespace TileMap
                 tileTextures[i] = Content.Load<Texture2D>($"Images/{(Tile.Block)i+1}");
             }
 
-            playerTexture = Content.Load<Texture2D>("Images/UFOMater");
-            cursorTexture = Content.Load<Texture2D>("Images/White");
-
-            level = new Level("level", tileTextures, playerTexture, cursorTexture);
+            level = new Level("level", tileTextures, white, white);
         }
 
         protected override void Update(GameTime gameTime)
@@ -91,36 +79,13 @@ namespace TileMap
 
             InputManager.Update();
 
-            if (Keyboard.GetState().IsKeyDown(Keys.LeftAlt))
+            if (InputManager.IsKeyPressed(Keys.LeftAlt))
             {
-                if (!fullscreenKeyPressed)
-                {
-                    fullscreenKeyPressed = true;
-                    if (_graphics.IsFullScreen)
-                    {
-                        _graphics.PreferredBackBufferWidth = (int)GameSettings.Data.WindowSize.X;
-                        _graphics.PreferredBackBufferHeight = (int)GameSettings.Data.WindowSize.Y;
-                    }
-                    else
-                    {
-                        _graphics.PreferredBackBufferWidth = (int)screenSize.X;
-                        _graphics.PreferredBackBufferHeight = (int)screenSize.Y;
-                    }
-                    screenScaleFactor = _graphics.PreferredBackBufferWidth / GameSettings.Data.ViewportSize.X;
-                    _graphics.ToggleFullScreen();
-                    _graphics.ApplyChanges();
-                }
-            }
-            else
-            {
-                fullscreenKeyPressed = false;
+                UpdateScreen(!_graphics.IsFullScreen);
             }
 
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-
-            _previousMouseState = _currentMouseState;
-            _currentMouseState = Mouse.GetState();
 
             level.Update(deltaTime, screenScaleFactor);
 
@@ -132,30 +97,58 @@ namespace TileMap
             GraphicsDevice.SetRenderTarget(viewport);
             GraphicsDevice.Clear(new Color(150,255,255));
 
-            // Game stuff
-            _spriteBatch.Begin(blendState: BlendState.AlphaBlend);
-
+            // VIEWPORT
+            _spriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
             level.Draw(_spriteBatch);
-
             _spriteBatch.End();
+            // VIEWPORT
 
             GraphicsDevice.SetRenderTarget(null);
             GraphicsDevice.Clear(new Color(150, 255, 255));
 
-            // Scale everything back up from 640x360
+            // SCREEN
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
+            _spriteBatch.Draw(viewport, new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height), Color.White); // Scale viewport up to window size
+            _spriteBatch.End();
+            // SCREEN
 
-            _spriteBatch.Draw(viewport, new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height), Color.White);
-            _spriteBatch.DrawString(_fontMedium, ((int)fps).ToString(), new Vector2(5, 0), Color.Black);
-            _spriteBatch.DrawString(_fontSmall, ("playerPosition: " + (int)level.player.position.X) + " , " + ((int)level.player.position.Y), new Vector2(5, 40), Color.Black);
-            _spriteBatch.DrawString(_fontSmall, ("cameraPosition: " + (int)level.camera.position.X) + " , " + ((int)level.camera.position.Y), new Vector2(5, 65), Color.Black);
-            _spriteBatch.DrawString(_fontSmall, ("renderedTiles: " + level.tilemap.renderedTiles), new Vector2(5, 90), Color.Black);
-            _spriteBatch.DrawString(_fontSmall, ("activeBlock: " + level.tilemap.activeBlock).ToString(), new Vector2(5, 115), Color.Black);
-            _spriteBatch.DrawString(_fontSmall, ("placingWalls: " + level.tilemap.placingWalls), new Vector2(5, 140), Color.Black);
+            // TEXT
+            _spriteBatch.Begin(samplerState: SamplerState.LinearClamp, blendState: BlendState.AlphaBlend);
+
+            _spriteBatch.DrawString(_fontMedium, ((int)fps).ToString(), new Vector2(5, 0), Color.Black, 0, Vector2.Zero, screenScaleFactor / 2, SpriteEffects.None, 0);
+            _spriteBatch.DrawString(_fontSmall, $"PhysicsFps: {GameSettings.Data.PhysicsFps}", new Vector2(5, 40 * (screenScaleFactor / 2)), Color.Black, 0, Vector2.Zero, screenScaleFactor / 2, SpriteEffects.None, 0);
+            _spriteBatch.DrawString(_fontSmall, $"playerPosition: {(int)level.player.position.X} , {(int)level.player.position.Y}", new Vector2(5, 65 * (screenScaleFactor / 2)), Color.Black, 0, Vector2.Zero, screenScaleFactor / 2, SpriteEffects.None, 0);
+            _spriteBatch.DrawString(_fontSmall, $"cameraPosition: {(int)level.camera.position.X} , {(int)level.camera.position.Y}", new Vector2(5, 90 * (screenScaleFactor / 2)), Color.Black, 0, Vector2.Zero, screenScaleFactor / 2, SpriteEffects.None, 0);
+            _spriteBatch.DrawString(_fontSmall, $"renderedTiles: {level.tilemap.renderedTiles}", new Vector2(5, 115 * (screenScaleFactor / 2)), Color.Black, 0, Vector2.Zero, screenScaleFactor / 2, SpriteEffects.None, 0);
+            _spriteBatch.DrawString(_fontSmall, $"activeBlock: {level.tilemap.activeBlock}", new Vector2(5, 140 * (screenScaleFactor / 2)), Color.Black, 0, Vector2.Zero, screenScaleFactor / 2, SpriteEffects.None, 0);
+            _spriteBatch.DrawString(_fontSmall, $"placingWalls: {level.tilemap.placingWalls}", new Vector2(5, 165 * (screenScaleFactor / 2)), Color.Black, 0, Vector2.Zero, screenScaleFactor / 2, SpriteEffects.None, 0);
 
             _spriteBatch.End();
+            // TEXT
 
             base.Draw(gameTime);
+        }
+
+        private void UpdateScreen(bool fullscreen)
+        {   
+            screenSize = new Vector2(GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width, GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height);
+
+            if (fullscreen)
+            {
+                _graphics.PreferredBackBufferWidth = (int)screenSize.X;
+                _graphics.PreferredBackBufferHeight = (int)screenSize.Y;
+            }
+            else
+            {
+                _graphics.PreferredBackBufferWidth = (int)GameSettings.Data.WindowSize.X;
+                _graphics.PreferredBackBufferHeight = (int)GameSettings.Data.WindowSize.Y;
+            }
+            screenScaleFactor = _graphics.PreferredBackBufferWidth / GameSettings.Data.ViewportSize.X;
+
+            InputManager.screenScaleFactor = screenScaleFactor;
+
+            _graphics.IsFullScreen = fullscreen;
+            _graphics.ApplyChanges();
         }
     }
 }

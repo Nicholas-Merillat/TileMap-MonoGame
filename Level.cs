@@ -31,7 +31,7 @@ namespace TileMap
 
         public void Update(float deltaTime, float screenScaleFactor)
         {   
-            tilemap.Update(screenScaleFactor);
+            tilemap.Update();
 
             foreach (var entity in entities)
             {

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace TileMap
 {
@@ -47,7 +43,6 @@ namespace TileMap
         public Block ID;
         public string name;
         public bool isSolid;
-        public bool isLight;
 
         public Tile(Block ID)
         {
