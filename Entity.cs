@@ -22,7 +22,6 @@ namespace TileMap
         
         public bool onGround;
         public Vector2 position;
-        // private Vector2 previousPosition;
         public Vector2 velocity;
 
         public Entity(Vector2 position, Texture2D texture, TileMap tilemap)
@@ -33,12 +32,15 @@ namespace TileMap
             this.direction = Vector2.Zero;
         }
 
-        public virtual void Update(float deltaTime)
+        public virtual void Input()
         {
-            // previousPosition = position;
+            // Override when extending entity if input needed
+        }
 
-            velocity.X = MathHelper.Lerp(velocity.X, MaxSpeed * direction.X, Speed * deltaTime);
-            velocity.Y += Gravity * deltaTime;
+        public virtual void Update()
+        {
+            velocity.X = MathHelper.Lerp(velocity.X, MaxSpeed * direction.X, Speed);
+            velocity.Y += Gravity;
             if (velocity.Y > MaxFallSpeed) velocity.Y = MaxFallSpeed;
 
             if (wantToJump && onGround)
@@ -48,15 +50,8 @@ namespace TileMap
             }
             else if (!wantToJump && velocity.Y < 0) velocity.Y *= 0.75f;
 
-            position.X += velocity.X * deltaTime;
-            position.Y += velocity.Y * deltaTime;
-
-            // if (position.Y - previousPosition.Y > GameSettings.Data.TileSize)
-            // {
-            //     position.Y = previousPosition.Y;
-            // }
-
-            // Prepare for the horde of if statements
+            position.X += velocity.X;
+            position.Y += velocity.Y;
 
             // Floor collision
             onGround = false;

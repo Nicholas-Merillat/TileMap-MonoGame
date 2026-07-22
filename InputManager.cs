@@ -11,14 +11,14 @@ namespace TileMap
         private static MouseState _mouseState;
         private static MouseState _previousMouseState;
 
+        public static float screenScaleFactor;
+
         public static readonly Keys LeftKey = Keys.A;
         public static readonly Keys RightKey = Keys.D;
         public static readonly Keys UpKey = Keys.W;
         public static readonly Keys DownKey = Keys.S;
         public static readonly Keys JumpKey = Keys.Space;
         public static readonly Keys PlayerDebugKey = Keys.LeftShift;
-
-        public static float screenScaleFactor;
 
         public enum MouseButton
         {

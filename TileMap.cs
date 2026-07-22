@@ -26,13 +26,13 @@ namespace TileMap
 
         private readonly Dictionary<int, int> maskToTile = new Dictionary<int, int>()
         {
-            { 2, 1 }, { 8, 2 }, { 10, 3 }, { 11, 4 },
-            { 16, 5 }, { 18, 6 }, { 22, 7 }, { 24, 8 },
-            { 26, 9 }, { 27, 10 }, { 30, 11 }, { 31, 12 },
-            { 64, 13 }, { 66, 14 }, { 72, 15 }, { 74, 16 },
-            { 75, 17 }, { 80, 18 }, { 82, 19 }, { 86, 20 },
-            { 88, 21 }, { 90, 22 }, { 91, 23 }, { 94, 24 },
-            { 95, 25 }, { 104, 26 }, { 106, 27 }, { 107, 28 },
+            { 2, 1 },    { 8, 2 },    { 10, 3 },   { 11, 4 },
+            { 16, 5 },   { 18, 6 },   { 22, 7 },   { 24, 8 },
+            { 26, 9 },   { 27, 10 },  { 30, 11 },  { 31, 12 },
+            { 64, 13 },  { 66, 14 },  { 72, 15 },  { 74, 16 },
+            { 75, 17 },  { 80, 18 },  { 82, 19 },  { 86, 20 },
+            { 88, 21 },  { 90, 22 },  { 91, 23 },  { 94, 24 },
+            { 95, 25 },  { 104, 26 }, { 106, 27 }, { 107, 28 },
             { 120, 29 }, { 122, 30 }, { 123, 31 }, { 126, 32 },
             { 127, 33 }, { 208, 34 }, { 210, 35 }, { 214, 36 },
             { 216, 37 }, { 218, 38 }, { 219, 39 }, { 222, 40 },
@@ -125,7 +125,7 @@ namespace TileMap
                 {   
                     if (y >= 50)
                     {   
-                        if (noise.GetNoise(x * frequency, y * frequency) < 0.2 || flatWorld)
+                        if (flatWorld || noise.GetNoise(x * frequency, y * frequency) < 0.2)
                         {
                             SetTile(x, y, Tile.Block.Grass);
                             SetWallTile(x, y, Tile.Block.Grass);
@@ -145,23 +145,21 @@ namespace TileMap
             }
 
             // Pre generate lighting
-            if (lightingEnabled)
+            for (int y = 0; y < size.Y; y++)
             {
-                for (int y = 0; y < size.Y; y++)
+                for (int x = 0; x < size.X; x++)
                 {
-                    for (int x = 0; x < size.X; x++)
-                    {
-                        CalculateLighting(x,y);
-                    }
-                }
-                for (int y = (int)size.Y; y > 0; y--)
-                {
-                    for (int x = (int)size.X; x > 0; x--)
-                    {
-                        CalculateLighting(x,y);
-                    }
+                    CalculateLighting(x,y);
                 }
             }
+            for (int y = (int)size.Y; y > 0; y--)
+            {
+                for (int x = (int)size.X; x > 0; x--)
+                {
+                    CalculateLighting(x,y);
+                }
+            }
+            
         }
 
         public int GetMask(int x, int y, Tile.Block ID, bool isWall)
@@ -214,7 +212,7 @@ namespace TileMap
                 return leftCheck || topCheck || rightCheck || bottomCheck;
             }
 
-            double decayFactor = 1.4;
+            double decayFactor = 1.5;
 
             if (GetTile(x, y).ID == Tile.Block.Air && GetWallTile(x, y).ID == Tile.Block.Air)
             {
@@ -242,7 +240,7 @@ namespace TileMap
             }
         }
 
-        public void Update()
+        public void Input()
         {
             mouseTilePosition = ScreenToTile(InputManager.GetMousePosition().X, InputManager.GetMousePosition().Y);
 
@@ -268,11 +266,19 @@ namespace TileMap
                     activeBlock = (Tile.Block)1;
                 }
             }
-
-            if (InputManager.IsKeyPressed(Keys.LeftControl))
+            else if (InputManager.IsKeyPressed(Keys.LeftControl))
             {
                 placingWalls = !placingWalls;
             }
+            else if (InputManager.IsKeyPressed(Keys.Q))
+            {
+                lightingEnabled = !lightingEnabled;
+            }
+        }
+
+        public void Update()
+        {
+            // Everything moved to Input()
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -292,19 +298,23 @@ namespace TileMap
                     Tile tile = GetTile(x, y);
                     Tile wallTile = GetWallTile(x, y);
 
+                    Color tileColor;
+                    Color wallTileColor;
+
                     if (x < size.X || y < size.Y)
                     {   
                         // LIGHTING
                         if (lightingEnabled)
                         {
                             CalculateLighting(x, y);
+                            tileColor = new Color(GetLightTile(x, y), GetLightTile(x, y), GetLightTile(x, y), 255);
+                            wallTileColor = new Color(GetLightTile(x, y) / 2, GetLightTile(x, y) / 2, GetLightTile(x, y) / 2, 255);
                         }
                         else
                         {
-                            SetLightTile(x, y, 255);
+                            tileColor = new Color(255, 255,255, 255);
+                            wallTileColor = new Color(255 / 2, 255 / 2, 255 / 2, 255);
                         }
-                        Color tileColor = new Color(GetLightTile(x, y), GetLightTile(x, y), GetLightTile(x, y), 255);
-                        Color wallTileColor = new Color(GetLightTile(x, y) / 2, GetLightTile(x, y) / 2, GetLightTile(x, y) / 2, 255);
                         // LIGHTING
 
                         // BITMASKING

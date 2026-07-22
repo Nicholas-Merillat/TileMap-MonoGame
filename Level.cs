@@ -22,23 +22,33 @@ namespace TileMap
             tilemap = new TileMap(GameSettings.Data.TileMapSize, tileTextures, camera, cursorTexture);
             player = new Player(Vector2.Zero, playerTexture, tilemap);
             
-            entities = new List<Entity>() 
+            entities = new List<Entity>()
             { 
                 player,
                 new Entity(new Vector2(100, 100), cursorTexture, tilemap),
             };
         }
 
-        public void Update(float deltaTime, float screenScaleFactor)
+        public void Input()
+        {   
+            tilemap.Input();
+
+            foreach (var entity in entities)
+            {
+                entity.Input();
+            }
+        }
+
+        public void Update()
         {   
             tilemap.Update();
 
             foreach (var entity in entities)
             {
-                entity.Update(deltaTime);
+                entity.Update();
             }
 
-            camera.Update(deltaTime, player);
+            camera.Update(player);
         }
 
         public void Draw(SpriteBatch spriteBatch)

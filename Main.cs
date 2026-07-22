@@ -7,16 +7,19 @@ namespace TileMap
 {
     public class Main : Game
     {   
-        private Vector2 screenSize;
-        private float screenScaleFactor;
-
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
         private SpriteFont _fontSmall;
         private SpriteFont _fontMedium;
 
+        private TimeSpan _tickAccumulator;
+        private readonly TimeSpan tickTargetTime;
+
         private RenderTarget2D viewport;
+        private Vector2 screenSize;
+        private float screenScaleFactor;
+        
         private float deltaTime;
         private float fps;
 
@@ -28,11 +31,13 @@ namespace TileMap
         public Main()
         {
             _graphics = new GraphicsDeviceManager(this);
+            _tickAccumulator = TimeSpan.Zero;
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
+            tickTargetTime = TimeSpan.FromSeconds(1.0 / (double)GameSettings.Data.TickRate);
 
             // FPS cap
-            _graphics.SynchronizeWithVerticalRetrace = false;
+            _graphics.SynchronizeWithVerticalRetrace = GameSettings.Data.VSync;
 
             if (GameSettings.Data.MaxFps <= 0)
             {
@@ -73,23 +78,37 @@ namespace TileMap
         }
 
         protected override void Update(GameTime gameTime)
-        {
-            deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds * GameSettings.Data.PhysicsFps;
-            fps = 1 / (deltaTime / GameSettings.Data.PhysicsFps);
+        {   
+            _tickAccumulator += gameTime.ElapsedGameTime;
+
+            deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds * GameSettings.Data.TickRate;
+            fps = 1 / (deltaTime / GameSettings.Data.TickRate);
 
             InputManager.Update();
+            level.Input();
 
             if (InputManager.IsKeyPressed(Keys.LeftAlt))
             {
                 UpdateScreen(!_graphics.IsFullScreen);
             }
 
+            // GAME LOGIC
+            while (_tickAccumulator >= tickTargetTime)
+            {
+                TickUpdate();
+                _tickAccumulator -= tickTargetTime;
+            }
+            // GAME LOGIC
+
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            level.Update(deltaTime, screenScaleFactor);
-
             base.Update(gameTime);
+        }
+
+        protected void TickUpdate()
+        {
+            level.Update();
         }
 
         protected override void Draw(GameTime gameTime)
@@ -116,7 +135,7 @@ namespace TileMap
             _spriteBatch.Begin(samplerState: SamplerState.LinearClamp, blendState: BlendState.AlphaBlend);
 
             _spriteBatch.DrawString(_fontMedium, ((int)fps).ToString(), new Vector2(5, 0), Color.Black, 0, Vector2.Zero, screenScaleFactor / 2, SpriteEffects.None, 0);
-            _spriteBatch.DrawString(_fontSmall, $"PhysicsFps: {GameSettings.Data.PhysicsFps}", new Vector2(5, 40 * (screenScaleFactor / 2)), Color.Black, 0, Vector2.Zero, screenScaleFactor / 2, SpriteEffects.None, 0);
+            _spriteBatch.DrawString(_fontSmall, $"TickRate: {GameSettings.Data.TickRate}", new Vector2(5, 40 * (screenScaleFactor / 2)), Color.Black, 0, Vector2.Zero, screenScaleFactor / 2, SpriteEffects.None, 0);
             _spriteBatch.DrawString(_fontSmall, $"playerPosition: {(int)level.player.position.X} , {(int)level.player.position.Y}", new Vector2(5, 65 * (screenScaleFactor / 2)), Color.Black, 0, Vector2.Zero, screenScaleFactor / 2, SpriteEffects.None, 0);
             _spriteBatch.DrawString(_fontSmall, $"cameraPosition: {(int)level.camera.position.X} , {(int)level.camera.position.Y}", new Vector2(5, 90 * (screenScaleFactor / 2)), Color.Black, 0, Vector2.Zero, screenScaleFactor / 2, SpriteEffects.None, 0);
             _spriteBatch.DrawString(_fontSmall, $"renderedTiles: {level.tilemap.renderedTiles}", new Vector2(5, 115 * (screenScaleFactor / 2)), Color.Black, 0, Vector2.Zero, screenScaleFactor / 2, SpriteEffects.None, 0);

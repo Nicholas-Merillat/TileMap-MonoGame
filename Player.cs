@@ -1,6 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 
 namespace TileMap
 {
@@ -14,7 +13,7 @@ namespace TileMap
             base.height = 15;
         }
 
-        public override void Update(float deltaTime)
+        public override void Input()
         {   
             // INPUT
             base.wantToJump = InputManager.IsKeyHeld(InputManager.JumpKey);
@@ -29,10 +28,15 @@ namespace TileMap
             }
             // INPUT
 
+            base.Input();
+        }
+
+        public override void Update()
+        {   
             // LOOP
             if (!debug)
             {
-                base.Update(deltaTime);
+                base.Update();
             }
             else
             {   
@@ -42,8 +46,8 @@ namespace TileMap
 
                 base.velocity = Vector2.Zero;
 
-                base.position.X += (base.MaxSpeed * 3) * base.direction.X * deltaTime;
-                base.position.Y += (base.MaxSpeed * 3) * base.direction.Y * deltaTime;
+                base.position.X += (base.MaxSpeed * 3) * base.direction.X;
+                base.position.Y += (base.MaxSpeed * 3) * base.direction.Y;
             }
             // LOOP
         }
