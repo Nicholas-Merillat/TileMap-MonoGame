@@ -46,8 +46,8 @@ namespace TileMap
 
                 base.velocity = Vector2.Zero;
 
-                base.position.X += (base.MaxSpeed * 3) * base.direction.X;
-                base.position.Y += (base.MaxSpeed * 3) * base.direction.Y;
+                base.position.X += (base.maxSpeed * 3) * base.direction.X;
+                base.position.Y += (base.maxSpeed * 3) * base.direction.Y;
             }
             // LOOP
         }

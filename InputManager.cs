@@ -11,7 +11,7 @@ namespace TileMap
         private static MouseState _mouseState;
         private static MouseState _previousMouseState;
 
-        public static float screenScaleFactor;
+        public static Vector2 screenScaleFactor;
 
         public static readonly Keys LeftKey = Keys.A;
         public static readonly Keys RightKey = Keys.D;
@@ -45,7 +45,7 @@ namespace TileMap
         // MOUSE
         public static Vector2 GetMousePosition()
         {
-            return new Vector2(_mouseState.X / screenScaleFactor, _mouseState.Y / screenScaleFactor);
+            return new Vector2(_mouseState.X / screenScaleFactor.X, _mouseState.Y / screenScaleFactor.Y);
         }
         public static bool IsMouseButtonPressed(MouseButton button)
         {

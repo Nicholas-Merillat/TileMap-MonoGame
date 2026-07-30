@@ -5,11 +5,11 @@ namespace TileMap
 {
     internal class Entity
     {
-        public float Gravity = 0.15f;
-        public float Speed = 0.1f;
-        public float MaxSpeed = 1f;
-        public float JumpForce = 3f;
-        public float MaxFallSpeed = 6f;
+        public float gravity = 0.15f;
+        public float speed = 0.1f;
+        public float maxSpeed = 1f;
+        public float jumpForce = 3f;
+        public float maxFallSpeed = 6f;
 
         public int width = 8;
         public int height = 8;
@@ -39,14 +39,14 @@ namespace TileMap
 
         public virtual void Update()
         {
-            velocity.X = MathHelper.Lerp(velocity.X, MaxSpeed * direction.X, Speed);
-            velocity.Y += Gravity;
-            if (velocity.Y > MaxFallSpeed) velocity.Y = MaxFallSpeed;
+            velocity.X = MathHelper.Lerp(velocity.X, maxSpeed * direction.X, speed);
+            velocity.Y += gravity;
+            if (velocity.Y > maxFallSpeed) velocity.Y = maxFallSpeed;
 
             if (wantToJump && onGround)
             {
                 onGround = false;
-                velocity.Y = -JumpForce;
+                velocity.Y = -jumpForce;
             }
             else if (!wantToJump && velocity.Y < 0) velocity.Y *= 0.75f;
 

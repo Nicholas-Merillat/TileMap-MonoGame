@@ -345,8 +345,7 @@ namespace TileMap
                             renderedTiles++;
 
                             // This fucking sucks but I have to do it for scaled tile textures
-                            spriteBatch.Draw
-                            (
+                            spriteBatch.Draw(
                                 tilesets[(int)wallTile.ID - 1].texture, // Texture
                                 new Vector2((float)Math.Floor(tilePos.X), (float)Math.Floor(tilePos.Y)), // Position
                                 tilesets[(int)wallTile.ID - 1].GetTileRect(wallBitmask), // Texture Rect
@@ -363,8 +362,7 @@ namespace TileMap
                             renderedTiles++;
 
                             // This fucking sucks but I have to do it for scaled tile textures
-                            spriteBatch.Draw
-                            (
+                            spriteBatch.Draw(
                                 tilesets[(int)tile.ID - 1].texture, // Texture
                                 new Vector2((float)Math.Floor(tilePos.X), (float)Math.Floor(tilePos.Y)), // Position
                                 tilesets[(int)tile.ID - 1].GetTileRect(bitmask), // Texture Rect
@@ -379,8 +377,7 @@ namespace TileMap
                     }
                 }
             }
-            spriteBatch.Draw
-            (
+            spriteBatch.Draw(
                 cursorTexture, 
                 new Rectangle((int)Math.Floor((mouseTilePosition.X * GameSettings.Data.TileSize) - camera.position.X), (int)Math.Floor((mouseTilePosition.Y * GameSettings.Data.TileSize) - camera.position.Y), GameSettings.Data.TileSize, GameSettings.Data.TileSize), 
                 Color.White * 0.5f

@@ -10,15 +10,14 @@ namespace TileMap
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
-        private SpriteFont _fontSmall;
-        private SpriteFont _fontMedium;
+        private SpriteFont _font;
 
         private TimeSpan _tickAccumulator;
         private readonly TimeSpan tickTargetTime;
 
         private RenderTarget2D viewport;
         private Vector2 screenSize;
-        private float screenScaleFactor;
+        private Vector2 screenScaleFactor;
         
         private float deltaTime;
         private float fps;
@@ -27,6 +26,14 @@ namespace TileMap
         private Texture2D white;
 
         private Level level;
+
+        private TextLabel fpsText;
+        private TextLabel tickRateText;
+        private TextLabel playerPosText;
+        private TextLabel cameraPosText;
+        private TextLabel renderedTilesText;
+        private TextLabel activeBlockText;
+        private TextLabel placingWallsText;
 
         public Main()
         {
@@ -60,8 +67,7 @@ namespace TileMap
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            _fontSmall = Content.Load<SpriteFont>("Fonts/FontSmall");
-            _fontMedium = Content.Load<SpriteFont>("Fonts/FontMedium");
+            _font = Content.Load<SpriteFont>("Fonts/Arial");
 
             white = new Texture2D(GraphicsDevice, 1, 1);
             white.SetData(new Color[] {Color.White});
@@ -75,6 +81,14 @@ namespace TileMap
             }
 
             level = new Level("level", tileTextures, white, white);
+
+            fpsText = new TextLabel("", new Vector2(5, 0), 12, _font);
+            tickRateText = new TextLabel("", new Vector2(5, 25), 6, _font);
+            playerPosText = new TextLabel("", new Vector2(5, 35), 6, _font);
+            cameraPosText = new TextLabel("", new Vector2(5, 45), 6, _font);
+            renderedTilesText = new TextLabel("", new Vector2(5, 55), 6, _font);
+            activeBlockText = new TextLabel("", new Vector2(5, 65), 6, _font);
+            placingWallsText = new TextLabel("", new Vector2(5, 75), 6, _font);
         }
 
         protected override void Update(GameTime gameTime)
@@ -99,6 +113,16 @@ namespace TileMap
                 _tickAccumulator -= tickTargetTime;
             }
             // GAME LOGIC
+
+            // TEXT
+            fpsText.SetText(((int)fps).ToString());
+            tickRateText.SetText($"TickRate: {GameSettings.Data.TickRate}");
+            playerPosText.SetText($"playerPosition: {(int)level.player.position.X} , {(int)level.player.position.Y}");
+            cameraPosText.SetText($"cameraPosition: {(int)level.camera.position.X} , {(int)level.camera.position.Y}");
+            renderedTilesText.SetText($"renderedTiles: {level.tilemap.renderedTiles}");
+            activeBlockText.SetText($"activeBlock: {level.tilemap.activeBlock}");
+            placingWallsText.SetText($"placingWalls: {level.tilemap.placingWalls}");
+            // TEXT
 
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
@@ -132,15 +156,15 @@ namespace TileMap
             // SCREEN
 
             // TEXT
-            _spriteBatch.Begin(samplerState: SamplerState.LinearClamp, blendState: BlendState.AlphaBlend);
+            _spriteBatch.Begin(samplerState: SamplerState.AnisotropicClamp, blendState: BlendState.AlphaBlend);
 
-            _spriteBatch.DrawString(_fontMedium, ((int)fps).ToString(), new Vector2(5, 0), Color.Black, 0, Vector2.Zero, screenScaleFactor / 2, SpriteEffects.None, 0);
-            _spriteBatch.DrawString(_fontSmall, $"TickRate: {GameSettings.Data.TickRate}", new Vector2(5, 40 * (screenScaleFactor / 2)), Color.Black, 0, Vector2.Zero, screenScaleFactor / 2, SpriteEffects.None, 0);
-            _spriteBatch.DrawString(_fontSmall, $"playerPosition: {(int)level.player.position.X} , {(int)level.player.position.Y}", new Vector2(5, 65 * (screenScaleFactor / 2)), Color.Black, 0, Vector2.Zero, screenScaleFactor / 2, SpriteEffects.None, 0);
-            _spriteBatch.DrawString(_fontSmall, $"cameraPosition: {(int)level.camera.position.X} , {(int)level.camera.position.Y}", new Vector2(5, 90 * (screenScaleFactor / 2)), Color.Black, 0, Vector2.Zero, screenScaleFactor / 2, SpriteEffects.None, 0);
-            _spriteBatch.DrawString(_fontSmall, $"renderedTiles: {level.tilemap.renderedTiles}", new Vector2(5, 115 * (screenScaleFactor / 2)), Color.Black, 0, Vector2.Zero, screenScaleFactor / 2, SpriteEffects.None, 0);
-            _spriteBatch.DrawString(_fontSmall, $"activeBlock: {level.tilemap.activeBlock}", new Vector2(5, 140 * (screenScaleFactor / 2)), Color.Black, 0, Vector2.Zero, screenScaleFactor / 2, SpriteEffects.None, 0);
-            _spriteBatch.DrawString(_fontSmall, $"placingWalls: {level.tilemap.placingWalls}", new Vector2(5, 165 * (screenScaleFactor / 2)), Color.Black, 0, Vector2.Zero, screenScaleFactor / 2, SpriteEffects.None, 0);
+            fpsText.Draw(_spriteBatch, screenScaleFactor);
+            tickRateText.Draw(_spriteBatch, screenScaleFactor);
+            playerPosText.Draw(_spriteBatch, screenScaleFactor);
+            cameraPosText.Draw(_spriteBatch, screenScaleFactor);
+            renderedTilesText.Draw(_spriteBatch, screenScaleFactor);
+            activeBlockText.Draw(_spriteBatch, screenScaleFactor);
+            placingWallsText.Draw(_spriteBatch, screenScaleFactor);
 
             _spriteBatch.End();
             // TEXT
@@ -162,7 +186,9 @@ namespace TileMap
                 _graphics.PreferredBackBufferWidth = (int)GameSettings.Data.WindowSize.X;
                 _graphics.PreferredBackBufferHeight = (int)GameSettings.Data.WindowSize.Y;
             }
-            screenScaleFactor = _graphics.PreferredBackBufferWidth / GameSettings.Data.ViewportSize.X;
+            screenScaleFactor = new Vector2(_graphics.PreferredBackBufferWidth / GameSettings.Data.ViewportSize.X, _graphics.PreferredBackBufferHeight / GameSettings.Data.ViewportSize.Y);
+
+            Console.WriteLine(screenScaleFactor);
 
             InputManager.screenScaleFactor = screenScaleFactor;
 

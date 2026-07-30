@@ -13,19 +13,12 @@
 
 #---------------------------------- Content ---------------------------------#
 
-#begin Fonts/FontMedium.spritefont
+#begin Fonts/Arial.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Compressed
-/build:Fonts/FontMedium.spritefont
-
-#begin Fonts/FontSmall.spritefont
-/importer:FontDescriptionImporter
-/processor:FontDescriptionProcessor
-/processorParam:PremultiplyAlpha=True
-/processorParam:TextureFormat=Compressed
-/build:Fonts/FontSmall.spritefont
+/build:Fonts/Arial.spritefont
 
 #begin Images/Clay.png
 /importer:TextureImporter
