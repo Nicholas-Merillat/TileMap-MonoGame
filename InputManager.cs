@@ -40,6 +40,21 @@ namespace TileMap
         {
             return !_keyboardState.IsKeyDown(key) && _previousKeyboardState.IsKeyDown(key);
         }
+        public static int GetInputAxis(Keys key1, Keys key2) // Basically same as Godot
+        {   
+            if (_keyboardState.IsKeyDown(key1) && !_keyboardState.IsKeyDown(key2))
+            {
+                return -1;
+            }
+            else if (_keyboardState.IsKeyDown(key2) && !_keyboardState.IsKeyDown(key1))
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
         // KEYBOARD
         
         // MOUSE

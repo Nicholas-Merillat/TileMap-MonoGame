@@ -7,7 +7,7 @@ namespace TileMap
         private Vector2 targetPos;
 
         public bool smoothPosition = true;
-        public float smoothingSpeed = 0.1f;
+        public float smoothingSpeed = 0.15f;
 
         public Vector2 position;
 

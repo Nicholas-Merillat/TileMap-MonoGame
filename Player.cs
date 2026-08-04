@@ -1,53 +1,50 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace TileMap
 {
     internal class Player : Entity
     {
-        private bool debug = false;
+        private bool debug;
 
         public Player(Vector2 position, Texture2D texture, TileMap tilemap) : base(position, texture, tilemap)
         {   
-            base.width = 7;
-            base.height = 15;
+            width = 7;
+            height = 15;
+
+            debug = false;
         }
 
         public override void Input()
         {   
             // INPUT
-            base.wantToJump = InputManager.IsKeyHeld(InputManager.JumpKey);
-            
-            if (InputManager.IsKeyHeld(InputManager.LeftKey)) base.direction.X = -1;
-            else if (InputManager.IsKeyHeld(InputManager.RightKey)) base.direction.X = 1;
-            else base.direction.X = 0;
+            if (InputManager.IsKeyPressed(InputManager.JumpKey)) wantToJump = true;
+            else if (InputManager.IsKeyReleased(InputManager.JumpKey)) wantToJump = false;
 
-            if (InputManager.IsKeyPressed(InputManager.PlayerDebugKey))
-            {
-                debug = !debug;
-            }
+            direction = new Vector2(
+                InputManager.GetInputAxis(InputManager.LeftKey, InputManager.RightKey), 
+                InputManager.GetInputAxis(InputManager.UpKey, InputManager.DownKey)
+            );
+
+            if (InputManager.IsKeyPressed(InputManager.PlayerDebugKey)) debug = !debug;
             // INPUT
-
-            base.Input();
         }
 
         public override void Update()
         {   
             // LOOP
-            if (!debug)
-            {
-                base.Update();
-            }
-            else
+            doCollision = !debug;
+            doGravity = !debug;
+
+            base.Update();
+
+            canJump = onGround && !wantToJump;
+
+            if (debug)
             {   
-                if (InputManager.IsKeyHeld(InputManager.UpKey)) base.direction.Y = -1;
-                else if (InputManager.IsKeyHeld(InputManager.DownKey)) base.direction.Y = 1;
-                else base.direction.Y = 0;
-
-                base.velocity = Vector2.Zero;
-
-                base.position.X += (base.maxSpeed * 3) * base.direction.X;
-                base.position.Y += (base.maxSpeed * 3) * base.direction.Y;
+                velocity.X = (maxSpeed * 3) * direction.X;
+                velocity.Y = (maxSpeed * 3) * direction.Y;
             }
             // LOOP
         }

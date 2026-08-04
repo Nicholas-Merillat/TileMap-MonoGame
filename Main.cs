@@ -23,6 +23,7 @@ namespace TileMap
         private float fps;
 
         private Texture2D[] tileTextures;
+        private SpriteSheet playerTexture;
         private Texture2D white;
 
         private Level level;
@@ -68,6 +69,8 @@ namespace TileMap
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             _font = Content.Load<SpriteFont>("Fonts/Arial");
+
+            playerTexture = new SpriteSheet(Content.Load<Texture2D>($"Images/Player"), new Vector2(33, 32));
 
             white = new Texture2D(GraphicsDevice, 1, 1);
             white.SetData(new Color[] {Color.White});
@@ -143,6 +146,8 @@ namespace TileMap
             // VIEWPORT
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
             level.Draw(_spriteBatch);
+
+            _spriteBatch.Draw(playerTexture.texture, new Vector2(200,200), playerTexture.GetSpriteRect(15), Color.White);
             _spriteBatch.End();
             // VIEWPORT
 
@@ -186,10 +191,8 @@ namespace TileMap
                 _graphics.PreferredBackBufferWidth = (int)GameSettings.Data.WindowSize.X;
                 _graphics.PreferredBackBufferHeight = (int)GameSettings.Data.WindowSize.Y;
             }
+            
             screenScaleFactor = new Vector2(_graphics.PreferredBackBufferWidth / GameSettings.Data.ViewportSize.X, _graphics.PreferredBackBufferHeight / GameSettings.Data.ViewportSize.Y);
-
-            Console.WriteLine(screenScaleFactor);
-
             InputManager.screenScaleFactor = screenScaleFactor;
 
             _graphics.IsFullScreen = fullscreen;
