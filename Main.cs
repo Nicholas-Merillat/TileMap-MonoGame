@@ -23,7 +23,7 @@ namespace TileMap
         private float fps;
 
         private Texture2D[] tileTextures;
-        private SpriteSheet playerTexture;
+        private Texture2D playerTexture;
         private Texture2D white;
 
         private Level level;
@@ -70,7 +70,7 @@ namespace TileMap
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             _font = Content.Load<SpriteFont>("Fonts/Arial");
 
-            playerTexture = new SpriteSheet(Content.Load<Texture2D>($"Images/Player"), new Vector2(33, 32));
+            playerTexture = Content.Load<Texture2D>($"Images/Player");
 
             white = new Texture2D(GraphicsDevice, 1, 1);
             white.SetData(new Color[] {Color.White});
@@ -83,7 +83,7 @@ namespace TileMap
                 tileTextures[i] = Content.Load<Texture2D>($"Images/{(Tile.Block)i+1}");
             }
 
-            level = new Level("level", tileTextures, white, white);
+            level = new Level("level", tileTextures, playerTexture, white);
 
             fpsText = new TextLabel("", new Vector2(5, 0), 12, _font);
             tickRateText = new TextLabel("", new Vector2(5, 25), 6, _font);
@@ -146,8 +146,6 @@ namespace TileMap
             // VIEWPORT
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
             level.Draw(_spriteBatch);
-
-            _spriteBatch.Draw(playerTexture.texture, new Vector2(200,200), playerTexture.GetSpriteRect(15), Color.White);
             _spriteBatch.End();
             // VIEWPORT
 

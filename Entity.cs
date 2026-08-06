@@ -16,6 +16,8 @@ namespace TileMap
         public int height = 8;
 
         public Vector2 direction;
+
+        public bool jumping;
         public bool wantToJump;
         public bool canJump;
         public bool doGravity;
@@ -53,6 +55,8 @@ namespace TileMap
         public virtual void Update()
         {
             velocity.X = MathHelper.Lerp(velocity.X, maxSpeed * direction.X, speed);
+            if (Math.Abs(velocity.X) < 0.05) velocity.X = 0; // Fixes weird bug when trying to lerp to 0
+
             if (doGravity) velocity.Y += gravity;
             if (velocity.Y > maxFallSpeed) velocity.Y = maxFallSpeed;
 
@@ -60,8 +64,9 @@ namespace TileMap
             {
                 onGround = false;
                 velocity.Y = -jumpForce;
+                jumping = true;
             }
-            else if (!wantToJump && velocity.Y < 0) velocity.Y *= 0.75f;
+            else if (!wantToJump && velocity.Y < 0 && jumping) velocity.Y *= 0.75f;
 
             position += velocity;
 
@@ -76,12 +81,14 @@ namespace TileMap
                     velocity.Y = 0;
                     position.Y = belowTileLeft.Y * GameSettings.Data.TileSize - height;
                     onGround = true;
+                    jumping = false;
                 }
                 else if (tilemap.GetTile(belowTileRight.X, belowTileRight.Y).isSolid && velocity.Y >= 0)
                 {   
                     velocity.Y = 0;
                     position.Y = belowTileRight.Y * GameSettings.Data.TileSize - height;
                     onGround = true;
+                    jumping = false;
                 }
 
                 // Ceiling collision
@@ -149,11 +156,13 @@ namespace TileMap
                     onGround = true;
                 }
             }
+
+            Animate();
         }
 
         public virtual void Draw(SpriteBatch spriteBatch, Vector2 cameraPosition)
         {
-            spriteBatch.Draw(texture, new Rectangle((int)(position.X - cameraPosition.X), (int)(position.Y - cameraPosition.Y), width, height), Color.Black);
+            spriteBatch.Draw(texture, new Rectangle((int)Math.Floor(position.X - cameraPosition.X), (int)Math.Floor(position.Y - cameraPosition.Y), width, height), Color.Black);
         }
     }
 }
