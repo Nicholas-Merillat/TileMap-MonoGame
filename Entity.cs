@@ -30,6 +30,9 @@ namespace TileMap
         public Vector2 position;
         public Vector2 velocity;
 
+        public SpriteEffects spriteOrientation;
+        public Vector2 spriteOffset;
+
         public Entity(Vector2 position, Texture2D texture, TileMap tilemap)
         {
             this.position = position;
@@ -49,13 +52,14 @@ namespace TileMap
 
         public virtual void Animate()
         {
-            // Override when extending entity if animation needed
+            if (direction.X > 0) spriteOrientation = SpriteEffects.None;
+            else if (direction.X < 0) spriteOrientation = SpriteEffects.FlipHorizontally;
         }
 
         public virtual void Update()
         {
             velocity.X = MathHelper.Lerp(velocity.X, maxSpeed * direction.X, speed);
-            if (Math.Abs(velocity.X) < 0.05) velocity.X = 0; // Fixes weird bug when trying to lerp to 0
+            if (Math.Abs(velocity.X) < 0.001) velocity.X = 0; // Fixes weird bug when trying to lerp to 0
 
             if (doGravity) velocity.Y += gravity;
             if (velocity.Y > maxFallSpeed) velocity.Y = maxFallSpeed;
@@ -162,7 +166,7 @@ namespace TileMap
 
         public virtual void Draw(SpriteBatch spriteBatch, Vector2 cameraPosition)
         {
-            spriteBatch.Draw(texture, new Rectangle((int)Math.Floor(position.X - cameraPosition.X), (int)Math.Floor(position.Y - cameraPosition.Y), width, height), Color.Black);
+            spriteBatch.Draw(texture, new Rectangle((int)(Math.Floor(position.X - cameraPosition.X) + spriteOffset.X), (int)(Math.Floor(position.Y - cameraPosition.Y) + spriteOffset.Y), width, height), Color.Black);
         }
     }
 }

@@ -347,7 +347,7 @@ namespace TileMap
                             // This fucking sucks but I have to do it for scaled tile textures
                             spriteBatch.Draw(
                                 tilesets[(int)wallTile.ID - 1].texture, // Texture
-                                new Vector2((float)Math.Floor(tilePos.X), (float)Math.Floor(tilePos.Y)), // Position
+                                new Vector2((int)Math.Floor(tilePos.X), (int)Math.Floor(tilePos.Y)), // Position
                                 tilesets[(int)wallTile.ID - 1].GetTileRect(wallBitmask), // Texture Rect
                                 wallTileColor, // Color
                                 0, // Rotation
@@ -364,7 +364,7 @@ namespace TileMap
                             // This fucking sucks but I have to do it for scaled tile textures
                             spriteBatch.Draw(
                                 tilesets[(int)tile.ID - 1].texture, // Texture
-                                new Vector2((float)Math.Floor(tilePos.X), (float)Math.Floor(tilePos.Y)), // Position
+                                new Vector2((int)Math.Floor(tilePos.X), (int)Math.Floor(tilePos.Y)), // Position
                                 tilesets[(int)tile.ID - 1].GetTileRect(bitmask), // Texture Rect
                                 tileColor, // Color
                                 0, // Rotation

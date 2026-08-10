@@ -12,8 +12,6 @@ namespace TileMap
         private double currentAnimFrame;
         private string currentAnim;
 
-        private SpriteEffects spriteOrientation;
-
         public Player(Vector2 position, Texture2D texture, TileMap tilemap) : base(position, texture, tilemap)
         {   
             width = 7;
@@ -22,6 +20,7 @@ namespace TileMap
             debug = false;
             spritesheet = new SpriteSheet(texture, new Vector2(33,32));
             currentAnim = "idle";
+            spriteOffset = new Vector2(-width * 2 + 1, -height);
         }
 
         public override void Input()
@@ -40,7 +39,27 @@ namespace TileMap
         }
 
         public override void Animate()
-        {
+        {   
+            // LOGIC
+            if (onGround)
+            {
+                currentAnim = "idle";
+                if (velocity.X > 0.05 || velocity.X < -0.05)
+                {
+                    currentAnim = "walk";
+                }
+            }
+            else
+            {   
+                currentAnim = "fall";
+                if (velocity.Y <= 0)
+                {
+                    currentAnim = "jump";
+                }
+            }
+            // LOGIC
+
+            // ANIMATION
             if (currentAnim == "idle")
             {
                 currentAnimFrame += 0.065;
@@ -66,17 +85,19 @@ namespace TileMap
             {
                 currentAnimFrame = 20;
             }
+            // ANIMATION
+
+            base.Animate();
         }
 
         public override void Update()
         {   
             // LOOP
-            doCollision = !debug;
-            doGravity = !debug;
-
             base.Update();
 
             canJump = onGround && !wantToJump;
+            doCollision = !debug;
+            doGravity = !debug;
 
             if (debug)
             {   
@@ -84,31 +105,6 @@ namespace TileMap
                 velocity.Y = maxSpeed * 3 * direction.Y;
             }
             // LOOP
-
-            // ANIMATION
-            if (direction.X > 0) spriteOrientation = SpriteEffects.None;
-            else if (direction.X < 0) spriteOrientation = SpriteEffects.FlipHorizontally;
-
-            if (onGround)
-            {
-                currentAnim = "idle";
-                if (velocity.X != 0)
-                {
-                    currentAnim = "walk";
-                }
-            }
-            else
-            {
-                if (velocity.Y <= 0)
-                {
-                    currentAnim = "jump";
-                }
-                else
-                {
-                    currentAnim = "fall";
-                }
-            }
-            // ANIMATION
         }
 
         public override void Draw(SpriteBatch spriteBatch, Vector2 cameraPosition)
@@ -117,7 +113,7 @@ namespace TileMap
 
             spriteBatch.Draw(
                 texture, 
-                new Vector2((int)Math.Floor(position.X - cameraPosition.X) - width * 2, (int)Math.Floor(position.Y - cameraPosition.Y) - height), 
+                new Vector2((int)Math.Floor(position.X - cameraPosition.X) + spriteOffset.X, (int)Math.Floor(position.Y - cameraPosition.Y) + spriteOffset.Y), 
                 spritesheet.GetSpriteRect((int)currentAnimFrame), 
                 Color.White,
                 0,
